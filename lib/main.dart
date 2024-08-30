@@ -21,10 +21,10 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       routes: {
-        '/': (context) => const PhoneLoginState(),
-        // '/': (context) => const HomePage(),
+        // '/': (context) => const PhoneLoginState(),
+        '/': (context) => const HomePage(),
         "/home": (context) => const HomePage(),
-        "/chat":(context) => const ChatPage(),
+        "/chat": (context) => const ChatPage(),
       },
     );
   }

@@ -121,7 +121,7 @@ class _PhoneLoginStateState extends State<PhoneLoginState> {
                                         
                                         if (_formKey1.currentState!
                                             .validate()) {
-                                              Navigator.pushNamed(context, "/home");
+                                              // Navigator.pushNamed(context, "/home");
                                             }
                                       },
                                       child: Text("Submit"))

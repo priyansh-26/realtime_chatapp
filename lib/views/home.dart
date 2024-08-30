@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
       body: ListView.builder(
         itemCount: 10,
         itemBuilder: (context, index) => ListTile(
-          onTap: ()=>Navigator.pushNamed(context, "/chat"),
+          onTap: () => Navigator.pushNamed(context, "/chat"),
           leading: Stack(
             children: [
               CircleAvatar(
