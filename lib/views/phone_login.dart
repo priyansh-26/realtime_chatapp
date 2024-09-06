@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_final_fields
+
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:realtime_chatapp/constants/colors.dart';
@@ -80,13 +82,13 @@ class _PhoneLoginStateState extends State<PhoneLoginState> {
                       height: 50,
                       width: double.infinity,
                       child: ElevatedButton(
-                        child: Text('Send OTP'),
+                        child: const Text('Send OTP'),
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             showDialog(
                               context: context,
                               builder: (context) => AlertDialog(
-                                title: Text('OTP Sent'),
+                                title: const Text('OTP Sent'),
                                 content: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
@@ -124,7 +126,7 @@ class _PhoneLoginStateState extends State<PhoneLoginState> {
                                               // Navigator.pushNamed(context, "/home");
                                             }
                                       },
-                                      child: Text("Submit"))
+                                      child: const Text("Submit"))
                                 ],
                               ),
                             );

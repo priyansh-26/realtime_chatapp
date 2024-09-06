@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_unnecessary_containers
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:realtime_chatapp/constants/colors.dart';
@@ -43,6 +45,33 @@ class _ChatMessageState extends State<ChatMessage> {
                           width: 200,
                         ),
                       ),
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            formatDate(widget.msg.timestamp),
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: Theme.of(context).colorScheme.outline),
+                          ),
+                        ),
+                        widget.msg.sender == widget.currentUser
+                            ? widget.msg.isSeenByReceiver
+                                ? const Icon(
+                                    Icons.check_circle_rounded,
+                                    size: 16,
+                                    color: kPrimaryColor,
+                                  )
+                                : const Icon(
+                                    Icons.check_circle_outline,
+                                    size: 16,
+                                    color: Colors.grey,
+                                  )
+                            : SizedBox()
+                      ],
                     )
                   ],
                 )
@@ -109,12 +138,12 @@ class _ChatMessageState extends State<ChatMessage> {
                         ),
                         widget.msg.sender == widget.currentUser
                             ? widget.msg.isSeenByReceiver
-                                ? Icon(
+                                ? const Icon(
                                     Icons.check_circle_rounded,
                                     size: 16,
                                     color: kPrimaryColor,
                                   )
-                                : Icon(
+                                : const Icon(
                                     Icons.check_circle_outline,
                                     size: 16,
                                     color: Colors.grey,

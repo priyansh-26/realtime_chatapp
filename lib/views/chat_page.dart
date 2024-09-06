@@ -11,6 +11,7 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
+  TextEditingController messageController = TextEditingController();
   List messages = [
     MessageModel(
       message: "Hello",
@@ -80,13 +81,46 @@ class _ChatPageState extends State<ChatPage> {
           ],
         ),
       ),
-      body: ListView.builder(
-        itemBuilder: (context, index) => ChatMessage(
-          msg: messages[index],
-          currentUser: "101",
-          isImage: true,
-        ),
-        itemCount: messages.length,
+      body: Column(
+        children: [
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.all(8),
+              child: ListView.builder(
+                itemBuilder: (context, index) => ChatMessage(
+                  msg: messages[index],
+                  currentUser: "101",
+                  isImage: true,
+                ),
+                itemCount: messages.length,
+              ),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.all(6),
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+                color: kSecondaryColor,
+                borderRadius: BorderRadius.circular(20)),
+            child: Row(children: [
+              Expanded(
+                child: TextFormField(
+                  controller: messageController,
+                  decoration: InputDecoration(
+                      border: InputBorder.none, hintText: "Message"),
+                ),
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.image),
+              ),
+              IconButton(
+                onPressed: () {},
+                icon: Icon(Icons.send_rounded),
+              ),
+            ]),
+          ),
+        ],
       ),
     );
   }
