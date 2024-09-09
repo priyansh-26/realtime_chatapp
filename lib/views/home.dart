@@ -24,10 +24,13 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         actions: [
-          CircleAvatar(
-              backgroundImage: const Image(
-            image: AssetImage("assets/user.png"),
-          ).image),
+          GestureDetector(
+            onTap: () => Navigator.pushNamed(context, "/profile"),
+            child: CircleAvatar(
+                backgroundImage: const Image(
+              image: AssetImage("assets/user.png"),
+            ).image),
+          ),
         ],
       ),
       body: ListView.builder(
@@ -72,7 +75,9 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushNamed(context, "/search");
+        },
         child: const Icon(Icons.add),
       ),
     );

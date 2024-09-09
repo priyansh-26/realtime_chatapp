@@ -2,7 +2,9 @@
 
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/constants/colors.dart';
+import 'package:realtime_chatapp/controllers/appwrite_controllers.dart';
 
 class PhoneLoginState extends StatefulWidget {
   const PhoneLoginState({super.key});
@@ -18,6 +20,23 @@ class _PhoneLoginStateState extends State<PhoneLoginState> {
   TextEditingController _phoneNumberController = TextEditingController();
   TextEditingController _otpController = TextEditingController();
   String countryCode = "+91";
+
+  void handleOtpSubmit(String userId, BuildContext context) {
+    if (_formKey1.currentState!.validate()) {
+      loginWithOtp(otp: _otpController.text, userId: userId).then((value) {
+        if (value) {
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            "/home",
+            (route) => false,
+          );
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text("Login Failed")));
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -85,50 +104,61 @@ class _PhoneLoginStateState extends State<PhoneLoginState> {
                         child: const Text('Send OTP'),
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('OTP Sent'),
-                                content: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Text("Enter 6 digit OTP"),
-                                    const SizedBox(height: 12),
-                                    Form(
-                                      key: _formKey1,
-                                      child: TextFormField(
-                                        keyboardType: TextInputType.number,
-                                        controller: _otpController,
-                                        validator: (value) {
-                                          if (value!.length != 6) {
-                                            return "Invalid OTP";
-                                          }
-                                          return null;
-                                        },
-                                        decoration: InputDecoration(
-                                          labelText: "Enter the OTP",
-                                          border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(15),
-                                          ),
-                                        ),
+                            createPhoneSession(
+                                    phone: countryCode +
+                                        _phoneNumberController.text)
+                                .then(
+                              (value) {
+                                if (value != "login_error") {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('OTP Sent'),
+                                      content: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text("Enter 6 digit OTP"),
+                                          const SizedBox(height: 12),
+                                          Form(
+                                            key: _formKey1,
+                                            child: TextFormField(
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              controller: _otpController,
+                                              validator: (value) {
+                                                if (value!.length != 6) {
+                                                  return "Invalid OTP";
+                                                }
+                                                return null;
+                                              },
+                                              decoration: InputDecoration(
+                                                labelText: "Enter the OTP",
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(15),
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        ],
                                       ),
-                                    )
-                                  ],
-                                ),
-                                actions: [
-                                  TextButton(
-                                      onPressed: () {
-                                        
-                                        if (_formKey1.currentState!
-                                            .validate()) {
-                                              // Navigator.pushNamed(context, "/home");
-                                            }
-                                      },
-                                      child: const Text("Submit"))
-                                ],
-                              ),
+                                      actions: [
+                                        TextButton(
+                                            onPressed: () {
+                                              handleOtpSubmit(value, context);
+                                            },
+                                            child: const Text("Submit"))
+                                      ],
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text("Failed to send OTP")));
+                                }
+                              },
                             );
                           }
                         },
