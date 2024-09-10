@@ -1,5 +1,8 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
+import 'package:provider/provider.dart';
+import 'package:realtime_chatapp/models/user_data.dart';
+import 'package:realtime_chatapp/providers/user_data_provider.dart';
 
 Client client = Client()
     .setEndpoint('https://cloud.appwrite.io/v1')
@@ -115,4 +118,22 @@ Future<bool> checkSessions() async {
 // to logout the user and delete session
 Future logoutUser() async {
   await account.deleteSession(sessionId: "current");
+}
+
+// load user data
+Future<UserData?> getUserDetails({required String userId}) async {
+  try {
+    final response = await databases.getDocument(
+        databaseId: db, collectionId: userCollection, documentId: userId);
+    print("getting user data ");
+    print(response.data);
+    // Provider.of<UserDataProvider>(navigatorKey.currentContext!, listen: false)
+    //     .setUserName(response.data["name"] ?? "");
+    // Provider.of<UserDataProvider>(navigatorKey.currentContext!, listen: false)
+    //     .setProfilePic(response.data["profile_pic"] ?? "");
+    return UserData.toMap(response.data);
+  } catch (e) {
+    print("error in getting user data :$e");
+    return null;
+  }
 }

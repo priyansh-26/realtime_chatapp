@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:realtime_chatapp/controllers/appwrite_controllers.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -26,6 +27,11 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           Divider(),
           ListTile(
+            onTap: () {
+              logoutUser();
+              Navigator.pushNamedAndRemoveUntil(
+                  context, "/login", (route) => false);
+            },
             leading: Icon(Icons.logout_outlined),
             title: Text("Logout"),
           ),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/constants/colors.dart';
 import 'package:realtime_chatapp/controllers/appwrite_controllers.dart';
+import 'package:realtime_chatapp/providers/user_data_provider.dart';
 
 class PhoneLoginState extends StatefulWidget {
   const PhoneLoginState({super.key});
@@ -25,10 +26,15 @@ class _PhoneLoginStateState extends State<PhoneLoginState> {
     if (_formKey1.currentState!.validate()) {
       loginWithOtp(otp: _otpController.text, userId: userId).then((value) {
         if (value) {
+          Provider.of<UserDataProvider>(context, listen: false)
+              .setUserId(userId);
+          Provider.of<UserDataProvider>(context, listen: false)
+              .setUserPhone(countryCode+_phoneNumberController.text);
           Navigator.pushNamedAndRemoveUntil(
             context,
-            "/home",
+            "/update",
             (route) => false,
+            arguments: {"title":"add"}
           );
         } else {
           ScaffoldMessenger.of(context)
