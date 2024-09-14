@@ -2,6 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/models/user_data.dart';
+import 'package:realtime_chatapp/main.dart';
 import 'package:realtime_chatapp/providers/user_data_provider.dart';
 
 Client client = Client()
@@ -12,9 +13,11 @@ Client client = Client()
 
 const String db = "66df308a001d782b7db4";
 const String userCollection = "66df30a2001147188e51";
+const String storageBucket = "66e5c8d500029fa844fb";
 
 Account account = Account(client);
 final Databases databases = Databases(client);
+final Storage storage = Storage(client);
 
 //save phone number to database(new user)
 Future<bool> savePhoneToDb(
@@ -135,5 +138,72 @@ Future<UserData?> getUserDetails({required String userId}) async {
   } catch (e) {
     print("error in getting user data :$e");
     return null;
+  }
+}
+
+// to update the user Data
+Future<bool> updateUserDetails(
+  String pic, {
+  required String userId,
+  required String name,
+}) async {
+  try {
+    final data = await databases.updateDocument(
+        databaseId: db,
+        collectionId: userCollection,
+        documentId: userId,
+        data: {"name": name, "profile_pic": pic});
+
+    Provider.of<UserDataProvider>(navigatorKey.currentContext!, listen: false)
+        .setUserName(name);
+    Provider.of<UserDataProvider>(navigatorKey.currentContext!, listen: false)
+        .setProfilePic(pic);
+    print(data);
+    return true;
+  } on AppwriteException catch (e) {
+    print("cannot save to db :$e");
+    return false;
+  }
+}
+
+// upload and save image to storage bucket (create new image)
+Future<String?> saveImageToBucket({required InputFile image}) async {
+  try {
+    final response = await storage.createFile(
+        bucketId: storageBucket, fileId: ID.unique(), file: image);
+    print("the response after save to bucket $response");
+    return response.$id;
+  } catch (e) {
+    print("error on saving image to bucket :$e");
+    return null;
+  }
+}
+
+// update an image in bucket : first delete then create new
+Future<String?> updateImageOnBucket(
+    {required String oldImageId, required InputFile image}) async {
+  try {
+    // to delete the old image
+    deleteImagefromBucket(oldImageId: oldImageId);
+
+    // create a new image
+    final newImage = saveImageToBucket(image: image);
+
+    return newImage;
+  } catch (e) {
+    print("cannot update / delete image :$e");
+    return null;
+  }
+}
+
+// to only delete the image from the storage bucket
+Future<bool> deleteImagefromBucket({required String oldImageId}) async {
+  try {
+    // to delete the old image
+    await storage.deleteFile(bucketId: storageBucket, fileId: oldImageId);
+    return true;
+  } catch (e) {
+    print("cannot update / delete image :$e");
+    return false;
   }
 }

@@ -10,6 +10,8 @@ import 'package:realtime_chatapp/views/profile.dart';
 import 'package:realtime_chatapp/views/search_users.dart';
 import 'package:realtime_chatapp/views/update_profile.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -30,6 +32,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
         title: 'Chat App',
         theme: ThemeData(
@@ -65,7 +68,8 @@ class _CheckUserSessionState extends State<CheckUserSession> {
           if (value)
             {
               Navigator.pushNamedAndRemoveUntil(
-                  context, "/update", (route) => false,arguments: {"title":"add"})
+                  context, "/update", (route) => false,
+                  arguments: {"title": "add"})
             }
           else
             {
