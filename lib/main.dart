@@ -63,20 +63,27 @@ class CheckUserSession extends StatefulWidget {
 class _CheckUserSessionState extends State<CheckUserSession> {
   @override
   void initState() {
+    Future.delayed(Duration.zero, () {
+      Provider.of<UserDataProvider>(context, listen: false).loadDatafromLocal();
+    });
+
     // TODO: implement initState
-    checkSessions().then((value) => {
-          if (value)
-            {
-              Navigator.pushNamedAndRemoveUntil(
-                  context, "/update", (route) => false,
-                  arguments: {"title": "add"})
-            }
-          else
-            {
-              Navigator.pushNamedAndRemoveUntil(
-                  context, "/login", (route) => false)
-            }
-        });
+    checkSessions().then((value) {
+      final userName =
+          Provider.of<UserDataProvider>(context, listen: false).getUserName;
+      print("username :$userName");
+      if (value) {
+        if (userName != null && userName != "") {
+          Navigator.pushNamedAndRemoveUntil(context, "/home", (route) => false);
+        } else {
+          Navigator.pushNamedAndRemoveUntil(
+              context, "/update", (route) => false,
+              arguments: {"title": "add"});
+        }
+      } else {
+        Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
+      }
+    });
     super.initState();
   }
 

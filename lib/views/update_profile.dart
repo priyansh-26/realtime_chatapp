@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'dart:io';
 
 import 'package:appwrite/appwrite.dart';
@@ -31,8 +33,9 @@ class _UpdateProfileState extends State<UpdateProfile> {
   void initState() {
     // try to load the data from local database
     Future.delayed(Duration.zero, () {
-      Provider.of<UserDataProvider>(context, listen: false).loadDatafromLocal();
       userId = Provider.of<UserDataProvider>(context, listen: false).getUserId;
+      Provider.of<UserDataProvider>(context, listen: false)
+          .loadUserData(userId!);
       imageId =
           Provider.of<UserDataProvider>(context, listen: false).getUserProfile;
     });

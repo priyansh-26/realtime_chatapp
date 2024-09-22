@@ -1,5 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/constants/colors.dart';
+import 'package:realtime_chatapp/providers/user_data_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,10 +29,16 @@ class _HomePageState extends State<HomePage> {
         actions: [
           GestureDetector(
             onTap: () => Navigator.pushNamed(context, "/profile"),
-            child: CircleAvatar(
-                backgroundImage: const Image(
-              image: AssetImage("assets/user.png"),
-            ).image),
+            child: Consumer<UserDataProvider>(builder: (context, value, child) {
+              return CircleAvatar(
+                  backgroundImage: value.getUserProfile != null ||
+                          value.getUserProfile != ""
+                      ? CachedNetworkImageProvider(
+                          "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${value.getUserProfile}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin")
+                      : Image(
+                          image: AssetImage("assets/user.png"),
+                        ).image);
+            }),
           ),
         ],
       ),
