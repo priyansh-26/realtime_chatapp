@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/foundation.dart';
 import 'package:realtime_chatapp/controllers/local_saved_data.dart';
 import 'package:realtime_chatapp/controllers/appwrite_controllers.dart';

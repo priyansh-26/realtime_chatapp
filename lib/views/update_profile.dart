@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, prefer_final_fields, avoid_print, unnecessary_null_comparison, use_build_context_synchronously, sort_child_properties_last
 
 import 'dart:io';
 

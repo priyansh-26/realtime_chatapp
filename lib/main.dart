@@ -1,7 +1,10 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/controllers/appwrite_controllers.dart';
 import 'package:realtime_chatapp/controllers/local_saved_data.dart';
+import 'package:realtime_chatapp/providers/chat_provider.dart';
 import 'package:realtime_chatapp/providers/user_data_provider.dart';
 import 'package:realtime_chatapp/views/chat_page.dart';
 import 'package:realtime_chatapp/views/home.dart';
@@ -29,6 +32,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (context) => UserDataProvider(),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => ChatProvider(),
         ),
       ],
       child: MaterialApp(

@@ -16,4 +16,16 @@ class MessageModel {
     required this.isSeenByReceiver,
     this.isImage,
   });
+
+  // that will convert Document model to message model
+  factory MessageModel.fromMap(Map<String, dynamic> map) {
+    return MessageModel(
+        message: map["message"],
+        sender: map["senderId"],
+        receiver: map["receiverId"],
+        timestamp: DateTime.parse(map["timestamp"]),
+        isSeenByReceiver: map["isSeenbyReceiver"],
+        messageId: map["\$id"],
+        isImage: map["isImage"]);
+  }
 }

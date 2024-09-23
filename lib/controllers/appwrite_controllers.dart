@@ -1,6 +1,10 @@
+// ignore_for_file: avoid_print
+
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 import 'package:provider/provider.dart';
+import 'package:realtime_chatapp/models/chat_data_model.dart';
+import 'package:realtime_chatapp/models/message_model.dart';
 import 'package:realtime_chatapp/models/user_data.dart';
 import 'package:realtime_chatapp/main.dart';
 import 'package:realtime_chatapp/providers/user_data_provider.dart';
@@ -13,6 +17,7 @@ Client client = Client()
 
 const String db = "66df308a001d782b7db4";
 const String userCollection = "66df30a2001147188e51";
+const String chatCollection = "66f1a4e50031c2a2ea5e";
 const String storageBucket = "66e5c8d500029fa844fb";
 
 Account account = Account(client);
@@ -205,5 +210,110 @@ Future<bool> deleteImagefromBucket({required String oldImageId}) async {
   } catch (e) {
     print("cannot update / delete image :$e");
     return false;
+  }
+}
+
+// to search all the users from the database
+Future<DocumentList?> searchUsers(
+    {required String searchItem, required String userId}) async {
+  try {
+    final DocumentList users = await databases
+        .listDocuments(databaseId: db, collectionId: userCollection, queries: [
+      Query.search("phone_no", searchItem),
+      // Query.search("name", searchItem),
+      Query.notEqual("userId", userId)
+    ]);
+
+    print("total match users ${users.total}");
+    return users;
+  } catch (e) {
+    print("error on search users :$e");
+    return null;
+  }
+}
+
+// create a new chat and save to database
+Future createNewChat(
+    {required String message,
+    required String senderId,
+    required String receiverId,
+    required bool isImage}) async {
+  try {
+    final msg = await databases.createDocument(
+        databaseId: db,
+        collectionId: chatCollection,
+        documentId: ID.unique(),
+        data: {
+          "message": message,
+          "senderId": senderId,
+          "receiverId": receiverId,
+          "timestamp": DateTime.now().toIso8601String(),
+          "isSeenbyReceiver": false,
+          "isImage": isImage,
+          "userData": [senderId, receiverId]
+        });
+
+    print("message send");
+    return true;
+  } catch (e) {
+    print("failed to send message :$e");
+    return false;
+  }
+}
+
+// to list all the chats belonging to the current user
+Future<Map<String, List<ChatDataModel>>?> currentUserChats(
+    String userId) async {
+  try {
+    var results = await databases
+        .listDocuments(databaseId: db, collectionId: chatCollection, queries: [
+      Query.or(
+          [Query.equal("senderId", userId), Query.equal("receiverId", userId)]),
+      Query.orderDesc("timestamp"),
+      Query.limit(2000)
+    ]);
+
+    final DocumentList chatDocuments = results;
+
+    print(
+        "chat documents ${chatDocuments.total} and documents ${chatDocuments.documents.length}");
+    Map<String, List<ChatDataModel>> chats = {};
+
+    if (chatDocuments.documents.isNotEmpty) {
+      for (var i = 0; i < chatDocuments.documents.length; i++) {
+        var doc = chatDocuments.documents[i];
+        String sender = doc.data["senderId"];
+        String receiver = doc.data["receiverId"];
+
+        MessageModel message = MessageModel.fromMap(doc.data);
+
+        List<UserData> users = [];
+        for (var user in doc.data["userData"]) {
+          users.add(UserData.toMap(user));
+        }
+
+        String key = (sender == userId) ? receiver : sender;
+
+        if (chats[key] == null) {
+          chats[key] = [];
+        }
+        chats[key]!.add(ChatDataModel(message: message, users: users));
+      }
+    }
+
+    return chats;
+  } catch (e) {
+    print("error in reading current user chats :$e");
+    return null;
+  }
+}
+
+// to delete the chat from database chat collection
+Future deleteCurrentUserChat({required String chatId}) async {
+  try {
+    await databases.deleteDocument(
+        databaseId: db, collectionId: chatCollection, documentId: chatId);
+  } catch (e) {
+    print("error on deleting chat message : $e");
   }
 }
