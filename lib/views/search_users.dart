@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_constructors, prefer_final_fields
 
 import 'package:appwrite/models.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/constants/colors.dart';
@@ -61,8 +62,7 @@ class _SearchUsersState extends State<SearchUsers> {
                     controller: _searchController,
                     onSubmitted: (value) => _handleSearch(),
                     decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "Enter phone number"),
+                        border: InputBorder.none, hintText: "Enter the name"),
                   ),
                 ),
                 IconButton(
@@ -98,7 +98,7 @@ class _SearchUsersState extends State<SearchUsers> {
                                 searchedUsers
                                         .documents[index].data["profile_pic"] !=
                                     ""
-                            ? NetworkImage(
+                            ? CachedNetworkImageProvider(
                                 "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${searchedUsers.documents[index].data["profile_pic"]}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin")
                             : Image(image: AssetImage("assets/user.png")).image,
                       ),

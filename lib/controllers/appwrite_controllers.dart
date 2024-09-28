@@ -219,8 +219,8 @@ Future<DocumentList?> searchUsers(
   try {
     final DocumentList users = await databases
         .listDocuments(databaseId: db, collectionId: userCollection, queries: [
-      Query.search("phone_no", searchItem),
-      // Query.search("name", searchItem),
+      // Query.search("phone_no", searchItem),
+      Query.search("name", searchItem),
       Query.notEqual("userId", userId)
     ]);
 

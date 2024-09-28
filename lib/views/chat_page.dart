@@ -1,13 +1,15 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, avoid_print
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/constants/chat_message.dart';
 import 'package:realtime_chatapp/constants/colors.dart';
+import 'package:realtime_chatapp/controllers/appwrite_controllers.dart';
 import 'package:realtime_chatapp/models/message_model.dart';
 import 'package:realtime_chatapp/models/user_data.dart';
 import 'package:realtime_chatapp/providers/chat_provider.dart';
+import 'package:realtime_chatapp/providers/user_data_provider.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -18,6 +20,9 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   TextEditingController messageController = TextEditingController();
+  late String currentUserId;
+  late String currentUserName;
+
   List messages = [
     MessageModel(
       message: "Hello",
@@ -49,6 +54,50 @@ class _ChatPageState extends State<ChatPage> {
       isSeenByReceiver: false,
     )
   ];
+
+  @override
+  void initState() {
+    currentUserId =
+        Provider.of<UserDataProvider>(context, listen: false).getUserId;
+    currentUserName =
+        Provider.of<UserDataProvider>(context, listen: false).getUserName;
+
+    Provider.of<ChatProvider>(context, listen: false).loadChats(currentUserId);
+
+    super.initState();
+  }
+
+  // to send simple text message
+  void _sendMessage({required UserData receiver}) {
+    if (messageController.text.isNotEmpty) {
+      setState(() {
+        createNewChat(
+                message: messageController.text,
+                senderId: currentUserId,
+                receiverId: receiver.userId,
+                isImage: false)
+            .then((value) {
+          if (value) {
+            Provider.of<ChatProvider>(context, listen: false).addMessage(
+                MessageModel(
+                    message: messageController.text,
+                    sender: currentUserId,
+                    receiver: receiver.userId,
+                    timestamp: DateTime.now(),
+                    isSeenByReceiver: false),
+                currentUserId,
+                [UserData(phone: "", userId: currentUserId), receiver]);
+            // sendNotificationtoOtherUser(
+            //     notificationTitle: '$currentUserName sent you a message',
+            //     notificationBody: messageController.text,
+            //     deviceToken: receiver.deviceToken!);
+            messageController.clear();
+          }
+        });
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     UserData receiver = ModalRoute.of(context)!.settings.arguments as UserData;
@@ -70,7 +119,7 @@ class _ChatPageState extends State<ChatPage> {
                           image: AssetImage("assets/user.png"),
                         ).image
                       : CachedNetworkImageProvider(
-                          "https://cloud.appwrite.io/v1/storage/buckets/662faabe001a20bb87c6/files/${receiver.profilePic}/view?project=662e8e5c002f2d77a17c&mode=admin"),
+                          "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${receiver.profilePic}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin"),
                 ),
                 SizedBox(
                   width: 10,
@@ -86,7 +135,7 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                     ),
                     Text(
-                      receiver.isOnline == true ? "Online" : "Offline",
+                      userAndOtherChats == true ? "Online" : "Offline",
                       style: TextStyle(
                         fontSize: 12,
                       ),
@@ -102,12 +151,63 @@ class _ChatPageState extends State<ChatPage> {
                 child: Container(
                   padding: EdgeInsets.all(8),
                   child: ListView.builder(
-                    itemBuilder: (context, index) => ChatMessage(
-                      msg: messages[index],
-                      currentUser: "101",
-                      isImage: true,
-                    ),
-                    itemCount: messages.length,
+                    reverse: true,
+                    itemBuilder: (context, index) {
+                      final msg = userAndOtherChats[
+                              userAndOtherChats.length - 1 - index]
+                          .message;
+                      print(userAndOtherChats.length);
+                      return GestureDetector(
+                        onLongPress: () {
+                          showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                    title: msg.isImage == true
+                                        ? Text(msg.sender == currentUserId
+                                            ? "Choose what you want to do with this image."
+                                            : "This image cant be modified")
+                                        : Text(
+                                            "${msg.message.length > 20 ? msg.message.substring(0, 20) : msg.message} ..."),
+                                    content: msg.isImage == true
+                                        ? Text(msg.sender == currentUserId
+                                            ? "Delete this image"
+                                            : "This image cant be deleted")
+                                        : Text(msg.sender == currentUserId
+                                            ? "Chosse what you want to do with this message."
+                                            : "This message cant be deleted"),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text("Cancel")),
+                                      TextButton(
+                                          onPressed: () {},
+                                          child: Text("Edit")),
+                                      msg.sender == currentUserId
+                                          ? TextButton(
+                                              onPressed: () {
+                                                Provider.of<ChatProvider>(
+                                                        context,
+                                                        listen: false)
+                                                    .deleteMessage(
+                                                        msg,
+                                                        currentUserId,
+                                                        msg.message);
+                                                        Navigator.pop(context);
+                                              },
+                                              child: Text("Delete"))
+                                          : SizedBox(),
+                                    ],
+                                  ));
+                        },
+                        child: ChatMessage(
+                            msg: msg,
+                            currentUser: currentUserId,
+                            isImage: msg.isImage ?? false),
+                      );
+                    },
+                    itemCount: userAndOtherChats.length,
                   ),
                 ),
               ),
@@ -119,7 +219,10 @@ class _ChatPageState extends State<ChatPage> {
                     borderRadius: BorderRadius.circular(20)),
                 child: Row(children: [
                   Expanded(
-                    child: TextFormField(
+                    child: TextField(
+                      onSubmitted: (value) {
+                        _sendMessage(receiver: receiver);
+                      },
                       controller: messageController,
                       decoration: InputDecoration(
                           border: InputBorder.none, hintText: "Message"),
@@ -130,7 +233,9 @@ class _ChatPageState extends State<ChatPage> {
                     icon: Icon(Icons.image),
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _sendMessage(receiver: receiver);
+                    },
                     icon: Icon(Icons.send_rounded),
                   ),
                 ]),
