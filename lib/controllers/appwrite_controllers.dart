@@ -135,10 +135,10 @@ Future<UserData?> getUserDetails({required String userId}) async {
         databaseId: db, collectionId: userCollection, documentId: userId);
     print("getting user data ");
     print(response.data);
-    // Provider.of<UserDataProvider>(navigatorKey.currentContext!, listen: false)
-    //     .setUserName(response.data["name"] ?? "");
-    // Provider.of<UserDataProvider>(navigatorKey.currentContext!, listen: false)
-    //     .setProfilePic(response.data["profile_pic"] ?? "");
+    Provider.of<UserDataProvider>(navigatorKey.currentContext!, listen: false)
+        .setUserName(response.data["name"] ?? "");
+    Provider.of<UserDataProvider>(navigatorKey.currentContext!, listen: false)
+        .setProfilePic(response.data["profile_pic"] ?? "");
     return UserData.toMap(response.data);
   } catch (e) {
     print("error in getting user data :$e");

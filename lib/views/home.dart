@@ -1,9 +1,13 @@
-// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_constructors, unused_local_variable, prefer_const_literals_to_create_immutables
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/constants/colors.dart';
+import 'package:realtime_chatapp/constants/formate_data.dart';
+import 'package:realtime_chatapp/models/chat_data_model.dart';
+import 'package:realtime_chatapp/models/user_data.dart';
+import 'package:realtime_chatapp/providers/chat_provider.dart';
 import 'package:realtime_chatapp/providers/user_data_provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,6 +18,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late String currentUserid = "";
+
+  @override
+  void initState() {
+    currentUserid =
+        Provider.of<UserDataProvider>(context, listen: false).getUserId;
+    Provider.of<ChatProvider>(context, listen: false).loadChats(currentUserid);
+    // PushNotifications.getDeviceToken();
+    // subscribeToRealtime(userId: currentUserid);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,46 +60,92 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: 10,
-        itemBuilder: (context, index) => ListTile(
-          onTap: () => Navigator.pushNamed(context, "/chat"),
-          leading: Stack(
-            children: [
-              CircleAvatar(
-                  backgroundImage: const Image(
-                image: AssetImage("assets/user.png"),
-              ).image),
-              const Positioned(
-                right: 0,
-                bottom: 0,
-                child: CircleAvatar(
-                  radius: 6,
-                  backgroundColor: Colors.green,
-                ),
-              )
-            ],
-          ),
-          title: const Text("Other User"),
-          subtitle: const Text("Hello"),
-          trailing: const Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  backgroundColor: kPrimaryColor,
-                  radius: 12,
-                  child: Text(
-                    "10",
-                    style: TextStyle(fontSize: 13, color: Colors.white),
-                  ),
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                Text("20:50")
-              ]),
-        ),
+      body: Consumer<ChatProvider>(
+        builder: (context, value, child) {
+          if (value.getAllChats.isEmpty) {
+            return Center(
+              child: Text("No chats to show"),
+            );
+          } else {
+            List otherUsers = value.getAllChats.keys.toList();
+            return ListView.builder(
+                itemCount: otherUsers.length,
+                itemBuilder: (context, index) {
+                  List<ChatDataModel> chatData =
+                      value.getAllChats[otherUsers[index]]!;
+
+                  int totalChats = chatData.length;
+                  UserData otherUser =
+                      chatData[0].users[0].userId == currentUserid
+                          ? chatData[0].users[1]
+                          : chatData[0].users[0];
+
+                  int unreadMsg = 0;
+
+                  chatData.fold(
+                    unreadMsg,
+                    (previousValue, element) {
+                      if (element.message.isSeenByReceiver == false) {
+                        unreadMsg++;
+                      }
+                      return unreadMsg;
+                    },
+                  );
+                  return ListTile(
+                    onTap: () => Navigator.pushNamed(context, "/chat",
+                        arguments: otherUser),
+                    leading: Stack(
+                      children: [
+                        CircleAvatar(
+                            backgroundImage: otherUser.profilePic == "" ||
+                                    otherUser.profilePic == null
+                                ? Image(
+                                    image: AssetImage("assets/user.png"),
+                                  ).image
+                                : CachedNetworkImageProvider(
+                                    "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${otherUser.profilePic}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin")),
+                        const Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: CircleAvatar(
+                            radius: 6,
+                            backgroundColor: Colors.green,
+                          ),
+                        )
+                      ],
+                    ),
+                    title: Text(otherUser.name!),
+                    subtitle: Text(
+                      "${chatData[totalChats - 1].message.sender == currentUserid ? "You : " : ""}${chatData[totalChats - 1].message.isImage == true ? "Sent an image" : chatData[totalChats - 1].message.message}",
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          chatData[totalChats - 1].message.sender !=
+                                  currentUserid
+                              ? unreadMsg != 0
+                                  ? CircleAvatar(
+                                      backgroundColor: kPrimaryColor,
+                                      radius: 12,
+                                      child: Text(
+                                        unreadMsg.toString(),
+                                        style: TextStyle(
+                                            fontSize: 13, color: Colors.white),
+                                      ))
+                                  : SizedBox()
+                              : SizedBox(),
+                          SizedBox(
+                            height: 8,
+                          ),
+                          Text(formatDate(
+                              chatData[totalChats - 1].message.timestamp))
+                        ]),
+                  );
+                });
+          }
+        },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
