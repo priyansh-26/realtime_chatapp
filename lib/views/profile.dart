@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/controllers/appwrite_controllers.dart';
 import 'package:realtime_chatapp/controllers/local_saved_data.dart';
+import 'package:realtime_chatapp/providers/chat_provider.dart';
 import 'package:realtime_chatapp/providers/user_data_provider.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -42,6 +43,10 @@ class _ProfilePageState extends State<ProfilePage> {
               ListTile(
                 onTap: () async {
                   await LocalSavedData.clearAllData();
+                  Provider.of<UserDataProvider>(context, listen: false)
+                      .clearAllProvider();
+                  Provider.of<ChatProvider>(context, listen: false)
+                      .clearChats();
                   await logoutUser();
                   Navigator.pushNamedAndRemoveUntil(
                       context, "/login", (route) => false);

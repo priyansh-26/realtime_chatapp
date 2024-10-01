@@ -66,15 +66,15 @@ class ChatProvider extends ChangeNotifier {
   }
 
   // delete message from the chats data
-  void deleteMessage(MessageModel message, String currentUser,String? imageId) async {
+  void deleteMessage(MessageModel message, String currentUser,) async {
     try {
       // user is delete the message
       if (message.sender == currentUser) {
         _chats[message.receiver]!
             .removeWhere((element) => element.message == message);
 
-        if (imageId!= null) {
-          deleteImagefromBucket(oldImageId: imageId);
+        if (message.isImage==true) {
+          deleteImagefromBucket(oldImageId: message.message);
           print("image deleted from bucket");
         }
 

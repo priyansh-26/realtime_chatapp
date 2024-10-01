@@ -20,6 +20,8 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   TextEditingController messageController = TextEditingController();
+  TextEditingController editmessageController = TextEditingController();
+
   late String currentUserId;
   late String currentUserName;
 
@@ -181,9 +183,51 @@ class _ChatPageState extends State<ChatPage> {
                                             Navigator.pop(context);
                                           },
                                           child: Text("Cancel")),
-                                      TextButton(
-                                          onPressed: () {},
-                                          child: Text("Edit")),
+                                      msg.sender == currentUserId
+                                          ? TextButton(
+                                              onPressed: () {
+                                                Navigator.pop(context);
+                                                editmessageController.text =
+                                                    msg.message;
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      AlertDialog(
+                                                    title: Text("Edit Message"),
+                                                    content: TextFormField(
+                                                      controller:
+                                                          editmessageController,
+                                                      maxLines: 1,
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          editChat(
+                                                              chatId: msg
+                                                                  .messageId!,
+                                                              message:
+                                                                  editmessageController
+                                                                      .text);
+                                                          Navigator.pop(
+                                                              context);
+                                                          editmessageController
+                                                              .text = "";
+                                                        },
+                                                        child: Text('Ok'),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        child: Text('Cancel'),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                              child: Text("Edit"))
+                                          : SizedBox(),
                                       msg.sender == currentUserId
                                           ? TextButton(
                                               onPressed: () {
@@ -191,10 +235,10 @@ class _ChatPageState extends State<ChatPage> {
                                                         context,
                                                         listen: false)
                                                     .deleteMessage(
-                                                        msg,
-                                                        currentUserId,
-                                                        msg.message);
-                                                        Navigator.pop(context);
+                                                  msg,
+                                                  currentUserId,
+                                                );
+                                                Navigator.pop(context);
                                               },
                                               child: Text("Delete"))
                                           : SizedBox(),

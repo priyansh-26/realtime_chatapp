@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/constants/colors.dart';
 import 'package:realtime_chatapp/constants/formate_data.dart';
+import 'package:realtime_chatapp/controllers/appwrite_controllers.dart';
 import 'package:realtime_chatapp/models/chat_data_model.dart';
 import 'package:realtime_chatapp/models/user_data.dart';
 import 'package:realtime_chatapp/providers/chat_provider.dart';
@@ -26,7 +27,7 @@ class _HomePageState extends State<HomePage> {
         Provider.of<UserDataProvider>(context, listen: false).getUserId;
     Provider.of<ChatProvider>(context, listen: false).loadChats(currentUserid);
     // PushNotifications.getDeviceToken();
-    // subscribeToRealtime(userId: currentUserid);
+    subscribeToRealtime(userId: currentUserid);
     super.initState();
   }
 

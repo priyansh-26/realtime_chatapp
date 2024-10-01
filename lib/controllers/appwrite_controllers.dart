@@ -7,6 +7,7 @@ import 'package:realtime_chatapp/models/chat_data_model.dart';
 import 'package:realtime_chatapp/models/message_model.dart';
 import 'package:realtime_chatapp/models/user_data.dart';
 import 'package:realtime_chatapp/main.dart';
+import 'package:realtime_chatapp/providers/chat_provider.dart';
 import 'package:realtime_chatapp/providers/user_data_provider.dart';
 
 Client client = Client()
@@ -23,6 +24,40 @@ const String storageBucket = "66e5c8d500029fa844fb";
 Account account = Account(client);
 final Databases databases = Databases(client);
 final Storage storage = Storage(client);
+final Realtime realtime = Realtime(client);
+
+RealtimeSubscription? subscription;
+// to subscribe to realtime changes
+subscribeToRealtime({required String userId}) {
+  subscription = realtime.subscribe([
+    "databases.$db.collections.$chatCollection.documents",
+    "databases.$db.collections.$userCollection.documents"
+  ]);
+
+  print("subscribing to realtime");
+
+  subscription!.stream.listen((data) {
+    print("some event happend");
+    // print(data.events);
+    // print(data.payload);
+    final firstItem = data.events[0].split(".");
+    final eventType = firstItem[firstItem.length - 1];
+    print("event type is $eventType");
+    if (eventType == "create") {
+      Provider.of<ChatProvider>(navigatorKey.currentState!.context,
+              listen: false)
+          .loadChats(userId);
+    } else if (eventType == "update") {
+      Provider.of<ChatProvider>(navigatorKey.currentState!.context,
+              listen: false)
+          .loadChats(userId);
+    } else if (eventType == "delete") {
+      Provider.of<ChatProvider>(navigatorKey.currentState!.context,
+              listen: false)
+          .loadChats(userId);
+    }
+  });
+}
 
 //save phone number to database(new user)
 Future<bool> savePhoneToDb(
@@ -315,5 +350,22 @@ Future deleteCurrentUserChat({required String chatId}) async {
         databaseId: db, collectionId: chatCollection, documentId: chatId);
   } catch (e) {
     print("error on deleting chat message : $e");
+  }
+}
+
+// edit our chat message and update to database
+Future editChat({
+  required String chatId,
+  required String message,
+}) async {
+  try {
+    await databases.updateDocument(
+        databaseId: db,
+        collectionId: chatCollection,
+        documentId: chatId,
+        data: {"message": message});
+    print("message updated");
+  } catch (e) {
+    print("error on editing message :$e");
   }
 }
