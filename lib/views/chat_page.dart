@@ -106,6 +106,21 @@ class _ChatPageState extends State<ChatPage> {
     return Consumer<ChatProvider>(
       builder: (context, value, child) {
         final userAndOtherChats = value.getAllChats[receiver.userId] ?? [];
+
+        bool? otherUserOnline = userAndOtherChats.isNotEmpty
+            ? userAndOtherChats[0].users[0].userId == receiver.userId
+                ? userAndOtherChats[0].users[0].isOnline
+                : userAndOtherChats[0].users[1].isOnline
+            : false;
+        List<String> receiverMsgList = [];
+        for (var chat in userAndOtherChats) {
+          if (chat.message.receiver == currentUserId) {
+            if (chat.message.isSeenByReceiver == false) {
+              receiverMsgList.add(chat.message.messageId!);
+            }
+          }
+        }
+        updateIsSeen(chatsIds: receiverMsgList);
         return Scaffold(
           appBar: AppBar(
             leadingWidth: 40,
@@ -137,7 +152,7 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                     ),
                     Text(
-                      userAndOtherChats == true ? "Online" : "Offline",
+                      otherUserOnline == true ? "Online" : "Offline",
                       style: TextStyle(
                         fontSize: 12,
                       ),

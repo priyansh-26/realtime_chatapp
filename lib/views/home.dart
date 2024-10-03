@@ -27,6 +27,7 @@ class _HomePageState extends State<HomePage> {
         Provider.of<UserDataProvider>(context, listen: false).getUserId;
     Provider.of<ChatProvider>(context, listen: false).loadChats(currentUserid);
     // PushNotifications.getDeviceToken();
+    updateOnlineStatus(status: true, userId: currentUserid);
     subscribeToRealtime(userId: currentUserid);
     super.initState();
   }
@@ -105,12 +106,14 @@ class _HomePageState extends State<HomePage> {
                                   ).image
                                 : CachedNetworkImageProvider(
                                     "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${otherUser.profilePic}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin")),
-                        const Positioned(
+                        Positioned(
                           right: 0,
                           bottom: 0,
                           child: CircleAvatar(
                             radius: 6,
-                            backgroundColor: Colors.green,
+                            backgroundColor: otherUser.isOnline == true
+                                ? Colors.green
+                                : Colors.grey.shade600,
                           ),
                         )
                       ],

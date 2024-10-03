@@ -15,9 +15,45 @@ import 'package:realtime_chatapp/views/update_profile.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
+class LifecycleEventHandler extends WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    String currentUserId = Provider.of<UserDataProvider>(
+            navigatorKey.currentState!.context,
+            listen: false)
+        .getUserId;
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        updateOnlineStatus(status: true, userId: currentUserId);
+        print("app resumed");
+        break;
+      case AppLifecycleState.inactive:
+        updateOnlineStatus(status: false, userId: currentUserId);
+        print("app inactive");
+
+        break;
+      case AppLifecycleState.paused:
+        updateOnlineStatus(status: false, userId: currentUserId);
+        print("app paused");
+
+        break;
+      case AppLifecycleState.detached:
+        updateOnlineStatus(status: false, userId: currentUserId);
+        print("app detched");
+
+        break;
+      case AppLifecycleState.hidden:
+        updateOnlineStatus(status: false, userId: currentUserId);
+        print("app hidden");
+    }
+  }
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  WidgetsBinding.instance.addObserver(LifecycleEventHandler());
   await LocalSavedData.init();
   runApp(const MyApp());
 }

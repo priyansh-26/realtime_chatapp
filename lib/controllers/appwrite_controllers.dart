@@ -369,3 +369,51 @@ Future editChat({
     print("error on editing message :$e");
   }
 }
+
+// to update isSeen message status
+Future updateIsSeen({required List<String> chatsIds}) async {
+  try {
+    for (var chatid in chatsIds) {
+      await databases.updateDocument(
+          databaseId: db,
+          collectionId: chatCollection,
+          documentId: chatid,
+          data: {"isSeenbyReceiver": true});
+      print("update is seen");
+    }
+  } catch (e) {
+    print("error in update isseen :$e");
+  }
+}
+
+// to update the online status
+Future updateOnlineStatus(
+    {required bool status, required String userId}) async {
+  try {
+    await databases.updateDocument(
+        databaseId: db,
+        collectionId: userCollection,
+        documentId: userId,
+        data: {"isOnline": status});
+    print("updated user online status $status ");
+  } catch (e) {
+    print("unable to update online status : $e");
+  }
+}
+
+// to save users device token to user collection
+Future saveUserDeviceToken(String token, String userId) async {
+  try {
+    await databases.updateDocument(
+        databaseId: db,
+        collectionId: userCollection,
+        documentId: userId,
+        data: {"device_token": token});
+    print("device token saved to db");
+
+    return true;
+  } catch (e) {
+    print("cannot save device token :$e");
+    return false;
+  }
+}
