@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_unnecessary_containers
+// ignore_for_file: avoid_unnecessary_containers, prefer_const_constructors
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -40,9 +40,11 @@ class _ChatMessageState extends State<ChatMessage> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: CachedNetworkImage(
-                          imageUrl: "https://picsum.photos/200",
+                          imageUrl:
+                              "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${widget.msg.message}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin",
                           height: 200,
                           width: 200,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),

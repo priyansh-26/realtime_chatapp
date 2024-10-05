@@ -1,9 +1,15 @@
 // ignore_for_file: avoid_print
 
+import 'dart:convert';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/controllers/appwrite_controllers.dart';
+import 'package:realtime_chatapp/controllers/fcm_controllers.dart';
 import 'package:realtime_chatapp/controllers/local_saved_data.dart';
+import 'package:realtime_chatapp/firebase_options.dart';
 import 'package:realtime_chatapp/providers/chat_provider.dart';
 import 'package:realtime_chatapp/providers/user_data_provider.dart';
 import 'package:realtime_chatapp/views/chat_page.dart';
@@ -13,7 +19,14 @@ import 'package:realtime_chatapp/views/profile.dart';
 import 'package:realtime_chatapp/views/search_users.dart';
 import 'package:realtime_chatapp/views/update_profile.dart';
 
+
 final navigatorKey = GlobalKey<NavigatorState>();
+// function to listen to background changes
+Future _firebaseBackgroundMessage(RemoteMessage message) async {
+  if (message.notification != null) {
+    print("Some notification Received in background...");
+  }
+}
 
 class LifecycleEventHandler extends WidgetsBindingObserver {
   @override
@@ -54,7 +67,56 @@ class LifecycleEventHandler extends WidgetsBindingObserver {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   WidgetsBinding.instance.addObserver(LifecycleEventHandler());
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    if (e is FirebaseException && e.code == 'duplicate-app') {
+      // Handle the duplicate app error if necessary.
+    } else {
+      rethrow; // Rethrow other exceptions.
+    }
+  }
   await LocalSavedData.init();
+   // initialize firebase messaging
+  await PushNotifications.init();
+
+  // initialize local notifications
+  await PushNotifications.localNotiInit();
+  // Listen to background notifications
+  FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundMessage);
+
+  // on background notification tapped
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    if (message.notification != null) {
+      print("Background Notification Tapped");
+      navigatorKey.currentState!.pushNamed("/message", arguments: message);
+    }
+  });
+
+// to handle foreground notifications
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    String payloadData = jsonEncode(message.data);
+    print("Got a message in foreground");
+    if (message.notification != null) {
+      PushNotifications.showSimpleNotification(
+          title: message.notification!.title!,
+          body: message.notification!.body!,
+          payload: payloadData);
+    }
+  });
+
+  // for handling in terminated state
+  final RemoteMessage? message =
+      await FirebaseMessaging.instance.getInitialMessage();
+
+  if (message != null) {
+    print("Launched from terminated state");
+    Future.delayed(Duration(seconds: 1), () {
+      navigatorKey.currentState!.pushNamed(
+        "/home",
+      );
+    });
+  }
   runApp(const MyApp());
 }
 

@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, unused_local_variable, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors, unused_local_variable, prefer_const_literals_to_create_immutables, unnecessary_null_comparison
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/constants/colors.dart';
 import 'package:realtime_chatapp/constants/formate_data.dart';
 import 'package:realtime_chatapp/controllers/appwrite_controllers.dart';
+import 'package:realtime_chatapp/controllers/fcm_controllers.dart';
 import 'package:realtime_chatapp/models/chat_data_model.dart';
 import 'package:realtime_chatapp/models/user_data.dart';
 import 'package:realtime_chatapp/providers/chat_provider.dart';
@@ -26,7 +27,7 @@ class _HomePageState extends State<HomePage> {
     currentUserid =
         Provider.of<UserDataProvider>(context, listen: false).getUserId;
     Provider.of<ChatProvider>(context, listen: false).loadChats(currentUserid);
-    // PushNotifications.getDeviceToken();
+    PushNotifications.getDeviceToken();
     updateOnlineStatus(status: true, userId: currentUserid);
     subscribeToRealtime(userId: currentUserid);
     super.initState();

@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print
 
+import 'dart:convert';
+
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +11,7 @@ import 'package:realtime_chatapp/models/user_data.dart';
 import 'package:realtime_chatapp/main.dart';
 import 'package:realtime_chatapp/providers/chat_provider.dart';
 import 'package:realtime_chatapp/providers/user_data_provider.dart';
+import 'package:http/http.dart' as http;
 
 Client client = Client()
     .setEndpoint('https://cloud.appwrite.io/v1')
@@ -415,5 +418,31 @@ Future saveUserDeviceToken(String token, String userId) async {
   } catch (e) {
     print("cannot save device token :$e");
     return false;
+  }
+}
+
+// to send notification to other user
+Future sendNotificationtoOtherUser({
+  required String notificationTitle,
+  required String notificationBody,
+  required String deviceToken,
+}) async {
+  try {
+    print("sending notification");
+    final Map<String, dynamic> body = {
+      "deviceToken": deviceToken,
+      "message": {"title": notificationTitle, "body": notificationBody},
+    };
+
+    final response = await http.post(
+        Uri.parse("http://67017d10d7a98cfadb5d.appwrite.global/"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body));
+
+    if (response.statusCode == 200) {
+      print("notification send to other user");
+    }
+  } catch (e) {
+    print("notification cannot be sent");
   }
 }

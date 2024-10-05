@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "705698911791",
+    "project_id": "push-notification-dfd32",
+    "storage_bucket": "push-notification-dfd32.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:705698911791:android:cc9ea4bb9570b025f098da",
+        "android_client_info": {
+          "package_name": "com.example.realtime_chatapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqMRxi2lWN2620ruBm8F_jsy9bX7bkIkA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

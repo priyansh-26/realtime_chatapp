@@ -1,6 +1,10 @@
 // ignore_for_file: prefer_const_constructors, avoid_print
 
+import 'dart:io';
+
+import 'package:appwrite/appwrite.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/constants/chat_message.dart';
@@ -24,38 +28,39 @@ class _ChatPageState extends State<ChatPage> {
 
   late String currentUserId;
   late String currentUserName;
+  FilePickerResult? _filePickerResult;
 
-  List messages = [
-    MessageModel(
-      message: "Hello",
-      sender: "101",
-      receiver: "202",
-      timestamp: DateTime(2024, 1, 12),
-      isSeenByReceiver: true,
-    ),
-    MessageModel(
-      message: "Hola",
-      sender: "202",
-      receiver: "101",
-      timestamp: DateTime(2024, 1, 12),
-      isSeenByReceiver: false,
-    ),
-    MessageModel(
-      message: "Hola",
-      sender: "202",
-      receiver: "101",
-      timestamp: DateTime(2024, 1, 12),
-      isSeenByReceiver: false,
-      isImage: true,
-    ),
-    MessageModel(
-      message: "how are you",
-      sender: "101",
-      receiver: "202",
-      timestamp: DateTime(2024, 1, 12),
-      isSeenByReceiver: false,
-    )
-  ];
+  // List messages = [
+  //   MessageModel(
+  //     message: "Hello",
+  //     sender: "101",
+  //     receiver: "202",
+  //     timestamp: DateTime(2024, 1, 12),
+  //     isSeenByReceiver: true,
+  //   ),
+  //   MessageModel(
+  //     message: "Hola",
+  //     sender: "202",
+  //     receiver: "101",
+  //     timestamp: DateTime(2024, 1, 12),
+  //     isSeenByReceiver: false,
+  //   ),
+  //   MessageModel(
+  //     message: "Hola",
+  //     sender: "202",
+  //     receiver: "101",
+  //     timestamp: DateTime(2024, 1, 12),
+  //     isSeenByReceiver: false,
+  //     isImage: true,
+  //   ),
+  //   MessageModel(
+  //     message: "how are you",
+  //     sender: "101",
+  //     receiver: "202",
+  //     timestamp: DateTime(2024, 1, 12),
+  //     isSeenByReceiver: false,
+  //   )
+  // ];
 
   @override
   void initState() {
@@ -67,6 +72,65 @@ class _ChatPageState extends State<ChatPage> {
     Provider.of<ChatProvider>(context, listen: false).loadChats(currentUserId);
 
     super.initState();
+  }
+
+  // to open file picker
+  void _openFilePicker(UserData receiver) async {
+    FilePickerResult? result = await FilePicker.platform
+        .pickFiles(allowMultiple: true, type: FileType.image);
+
+    setState(() {
+      _filePickerResult = result;
+      uploadAllImage(receiver);
+    });
+  }
+
+  // to upload files to our storage bucket and our database
+  void uploadAllImage(UserData receiver) async {
+    if (_filePickerResult != null) {
+      _filePickerResult!.paths.forEach((path) {
+        if (path != null) {
+          var file = File(path);
+          final fileBytes = file.readAsBytesSync();
+          final inputfile = InputFile.fromBytes(
+              bytes: fileBytes, filename: file.path.split("/").last);
+
+          // saving image to our storage bucket
+          saveImageToBucket(image: inputfile).then((imageId) {
+            if (imageId != null) {
+              createNewChat(
+                message: imageId,
+                senderId: currentUserId,
+                receiverId: receiver.userId,
+                isImage: true,
+                // isGroupInvite: false,
+              ).then((value) {
+                if (value) {
+                  Provider.of<ChatProvider>(context, listen: false).addMessage(
+                      MessageModel(
+                        // isGroupInvite: false,
+                        message: imageId,
+                        sender: currentUserId,
+                        receiver: receiver.userId,
+                        timestamp: DateTime.now(),
+                        isSeenByReceiver: false,
+                        isImage: true,
+                      ),
+                      currentUserId,
+                      [UserData(phone: "", userId: currentUserId), receiver]);
+                  sendNotificationtoOtherUser(
+                      notificationTitle: '$currentUserName sent you an image',
+                      notificationBody: "check it out.",
+                      deviceToken: receiver.deviceToken!);
+                }
+              });
+            }
+          });
+        }
+      });
+    } else {
+      print("file pick cancelled by user");
+    }
   }
 
   // to send simple text message
@@ -89,10 +153,10 @@ class _ChatPageState extends State<ChatPage> {
                     isSeenByReceiver: false),
                 currentUserId,
                 [UserData(phone: "", userId: currentUserId), receiver]);
-            // sendNotificationtoOtherUser(
-            //     notificationTitle: '$currentUserName sent you a message',
-            //     notificationBody: messageController.text,
-            //     deviceToken: receiver.deviceToken!);
+            sendNotificationtoOtherUser(
+                notificationTitle: '$currentUserName sent you a message',
+                notificationBody: messageController.text,
+                deviceToken: receiver.deviceToken!);
             messageController.clear();
           }
         });
@@ -288,7 +352,9 @@ class _ChatPageState extends State<ChatPage> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      _openFilePicker(receiver);
+                    },
                     icon: Icon(Icons.image),
                   ),
                   IconButton(
