@@ -435,7 +435,7 @@ Future sendNotificationtoOtherUser({
     };
 
     final response = await http.post(
-        Uri.parse("http://67017d10d7a98cfadb5d.appwrite.global/"),
+        Uri.parse("https://67095f2d4dfca1857d03.appwrite.global/"),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(body));
 

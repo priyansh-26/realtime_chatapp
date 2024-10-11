@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, prefer_const_constructors
 
 import 'dart:convert';
 
@@ -18,7 +18,6 @@ import 'package:realtime_chatapp/views/phone_login.dart';
 import 'package:realtime_chatapp/views/profile.dart';
 import 'package:realtime_chatapp/views/search_users.dart';
 import 'package:realtime_chatapp/views/update_profile.dart';
-
 
 final navigatorKey = GlobalKey<NavigatorState>();
 // function to listen to background changes
@@ -77,7 +76,7 @@ void main() async {
     }
   }
   await LocalSavedData.init();
-   // initialize firebase messaging
+  // initialize firebase messaging
   await PushNotifications.init();
 
   // initialize local notifications
@@ -89,7 +88,7 @@ void main() async {
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
     if (message.notification != null) {
       print("Background Notification Tapped");
-      navigatorKey.currentState!.pushNamed("/message", arguments: message);
+      navigatorKey.currentState!.pushNamed("/home", arguments: message);
     }
   });
 

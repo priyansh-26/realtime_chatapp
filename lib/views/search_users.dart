@@ -102,9 +102,9 @@ class _SearchUsersState extends State<SearchUsers> {
                                 "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${searchedUsers.documents[index].data["profile_pic"]}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin")
                             : Image(image: AssetImage("assets/user.png")).image,
                       ),
-                      title: Text(searchedUsers.documents[index].data["name"]),
+                      title: Text(searchedUsers.documents[index].data["name"]??"No name"),
                       subtitle:
-                          Text(searchedUsers.documents[index].data["phone_no"]),
+                          Text(searchedUsers.documents[index].data["phone_no"]??""),
                     );
                   },
                 ),
