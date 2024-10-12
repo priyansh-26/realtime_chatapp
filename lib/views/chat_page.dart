@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, avoid_print
+// ignore_for_file: prefer_const_constructors, avoid_print, avoid_function_literals_in_foreach_calls
 
 import 'dart:io';
 

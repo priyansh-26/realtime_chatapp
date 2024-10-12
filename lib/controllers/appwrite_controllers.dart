@@ -5,7 +5,9 @@ import 'dart:convert';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart';
 import 'package:provider/provider.dart';
+import 'package:realtime_chatapp/controllers/local_saved_data.dart';
 import 'package:realtime_chatapp/models/chat_data_model.dart';
+import 'package:realtime_chatapp/models/group_message_model.dart';
 import 'package:realtime_chatapp/models/message_model.dart';
 import 'package:realtime_chatapp/models/user_data.dart';
 import 'package:realtime_chatapp/main.dart';
@@ -22,6 +24,8 @@ Client client = Client()
 const String db = "66df308a001d782b7db4";
 const String userCollection = "66df30a2001147188e51";
 const String chatCollection = "66f1a4e50031c2a2ea5e";
+const String groupCollection = "670aa78a002bfd3fd0e2";
+const String groupMsgCollection = "670aa8dc0021ef57392d";
 const String storageBucket = "66e5c8d500029fa844fb";
 
 Account account = Account(client);
@@ -444,5 +448,276 @@ Future sendNotificationtoOtherUser({
     }
   } catch (e) {
     print("notification cannot be sent");
+  }
+}
+
+// Group Functions
+// create a new group
+Future<bool> createNewGroup(
+    {required String currentUser,
+    required String groupName,
+    required String groupDesc,
+    bool? isOpen,
+    required String image}) async {
+  try {
+    await databases.createDocument(
+        databaseId: db,
+        collectionId: groupCollection,
+        documentId: ID.unique(),
+        data: {
+          "admin": currentUser,
+          "group_name": groupName,
+          "group_desc": groupDesc,
+          "image": image,
+          "isPublic": isOpen,
+          "members": [currentUser],
+          "userData": [currentUser]
+        });
+    return true;
+  } catch (e) {
+    print("Failed to create new group $e");
+    return false;
+  }
+}
+
+Future<bool> updateExistingGroup(
+    {required String groupId,
+    required String groupName,
+    required String groupDesc,
+    bool? isOpen,
+    required String image}) async {
+  try {
+    await databases.updateDocument(
+        databaseId: db,
+        collectionId: groupCollection,
+        documentId: groupId,
+        data: {
+          "group_name": groupName,
+          "group_desc": groupDesc,
+          "image": image,
+          "isPublic": isOpen,
+        });
+    return true;
+  } catch (e) {
+    print("Failed to update the group $e");
+    return false;
+  }
+}
+
+// read all the groups current user is joined now.
+Future<DocumentList?> readAllGroups({required String currentUserId}) async {
+  try {
+    var result = await databases
+        .listDocuments(databaseId: db, collectionId: groupCollection, queries: [
+      Query.equal("members", currentUserId),
+      Query.limit(100),
+    ]);
+
+    return result;
+  } catch (e) {
+    print("error on reading group $e");
+    return null;
+  }
+}
+
+// GROUP MESSAGES
+// send a message to the group
+Future<bool> sendGroupMessage(
+    {required String groupId,
+    required String message,
+    required String senderId,
+    bool? isImage}) async {
+  try {
+    await databases.createDocument(
+        databaseId: db,
+        collectionId: groupMsgCollection,
+        documentId: ID.unique(),
+        data: {
+          "groupId": groupId,
+          "message": message,
+          "senderId": senderId,
+          "timestamp": DateTime.now().toIso8601String(),
+          "isImage": isImage ?? false,
+          "userData": [senderId]
+        });
+    return true;
+  } catch (e) {
+    print("error on sending group message ");
+    return false;
+  }
+}
+
+// update the group message
+Future<bool> updateGroupMessage(
+    {required String messageId, required String newMessage}) async {
+  try {
+    await databases.updateDocument(
+        databaseId: db,
+        collectionId: groupMsgCollection,
+        documentId: messageId,
+        data: {"message": newMessage});
+    return true;
+  } catch (e) {
+    print("error on updating group chat :$e");
+    return false;
+  }
+}
+
+// delete the specific group message
+Future deleteGroupMessage({required String messageId}) async {
+  try {
+    await databases.deleteDocument(
+        databaseId: db,
+        collectionId: groupMsgCollection,
+        documentId: messageId);
+  } catch (e) {
+    print("error in deleting group message :$e");
+  }
+}
+
+// reading all the group messages
+Future<Map<String, List<GroupMessageModel>>?> readGroupMessages(
+    {required List<String> groupIds}) async {
+  try {
+    var results = await databases.listDocuments(
+        databaseId: db,
+        collectionId: groupMsgCollection,
+        queries: [
+          Query.equal("groupId", groupIds),
+          Query.orderDesc("timestamp"),
+          Query.limit(2000)
+        ]);
+
+    final DocumentList groupChatDocuments = results;
+
+    Map<String, List<GroupMessageModel>> chats = {};
+
+    if (groupChatDocuments.documents.isNotEmpty) {
+      for (var i = 0; i < groupChatDocuments.documents.length; i++) {
+        var doc = groupChatDocuments.documents[i];
+
+        GroupMessageModel message = GroupMessageModel.fromMap(doc.data);
+        String groupId = doc.data["groupId"];
+
+        String key = groupId;
+
+        if (chats[key] == null) {
+          chats[key] = [];
+        }
+        chats[key]!.add(message);
+      }
+    }
+
+    print("loaded chats ${chats.length}");
+
+    return chats;
+  } catch (e) {
+    print("error in reading group chat messages :$e");
+    return null;
+  }
+}
+
+// to add the user to the specific group
+Future<bool> addUserToGroup(
+    {required String groupId, required String currentUser}) async {
+  try {
+    //  read the group members first
+    final result = await databases.getDocument(
+        databaseId: db,
+        collectionId: groupCollection,
+        documentId: groupId,
+        queries: [
+          Query.select(["members"])
+        ]);
+
+    List existingMembers = result.data["members"];
+
+    if (!existingMembers.contains(currentUser)) {
+      existingMembers.add(currentUser);
+    }
+
+    //  update the document of the specific group
+    await databases.updateDocument(
+        databaseId: db,
+        collectionId: groupCollection,
+        documentId: groupId,
+        data: {"members": existingMembers, "userData": existingMembers});
+    return true;
+  } catch (e) {
+    print("error on joining group :$e");
+    return false;
+  }
+}
+
+// to exit the specific group
+Future<bool> exitGroup(
+    {required String groupId, required String currentUser}) async {
+  try {
+    //  read the group members first
+    final result = await databases.getDocument(
+        databaseId: db,
+        collectionId: groupCollection,
+        documentId: groupId,
+        queries: [
+          Query.select(["members"])
+        ]);
+
+    List existingMembers = result.data["members"];
+
+    if (existingMembers.contains(currentUser)) {
+      existingMembers.remove(currentUser);
+    }
+
+    //  update the document of the specific group
+    await databases.updateDocument(
+        databaseId: db,
+        collectionId: groupCollection,
+        documentId: groupId,
+        data: {"members": existingMembers, "userData": existingMembers});
+    return true;
+  } catch (e) {
+    print("error on leaving group :$e");
+    return false;
+  }
+}
+
+// calculate the no of last unreadMessages
+//   Future<int> calculateUnreadMessages(String groupId, List<GroupMessageModel> groupMessages) async {
+//   Map<String, String> lastSeenMessages = await LocalSavedData(). getLastSeenMessages();
+//   String? lastSeenMessageId = lastSeenMessages[groupId];
+
+//   if (lastSeenMessageId == null) {
+//     return groupMessages.length;
+//   }
+
+//   int unreadCount = groupMessages.indexWhere((message) => message.messageId == lastSeenMessageId);
+//   if (unreadCount == -1) {
+//     return groupMessages.length;
+//   }
+
+//   return groupMessages.length - unreadCount - 1;
+// }
+
+// // save last message seen in the group
+//  Future<void> updateLastMessageSeen(String groupId, String lastMessageSeenId) async {
+//   Map<String, String> lastSeenMessages = await LocalSavedData().getLastSeenMessages();
+//   print("last seen messages: $lastSeenMessages");
+//   lastSeenMessages[groupId] = lastMessageSeenId;
+//   await LocalSavedData(). saveLastSeenMessages(lastSeenMessages);
+// }
+
+// list all public groups
+Future<List<Document>> getPublicGroups() async {
+  try {
+    final results = await databases
+        .listDocuments(databaseId: db, collectionId: groupCollection, queries: [
+      Query.equal("isPublic", true),
+    ]);
+    print("result got");
+    print(results.documents.length);
+    return results.documents;
+  } catch (e) {
+    print("error in getting public groups $e");
+    return [];
   }
 }
