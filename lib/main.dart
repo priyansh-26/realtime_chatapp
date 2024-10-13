@@ -11,8 +11,11 @@ import 'package:realtime_chatapp/controllers/fcm_controllers.dart';
 import 'package:realtime_chatapp/controllers/local_saved_data.dart';
 import 'package:realtime_chatapp/firebase_options.dart';
 import 'package:realtime_chatapp/providers/chat_provider.dart';
+import 'package:realtime_chatapp/providers/group_message_provider.dart';
 import 'package:realtime_chatapp/providers/user_data_provider.dart';
 import 'package:realtime_chatapp/views/chat_page.dart';
+import 'package:realtime_chatapp/views/create_or_update_group.dart';
+import 'package:realtime_chatapp/views/group_chat_page.dart';
 import 'package:realtime_chatapp/views/home.dart';
 import 'package:realtime_chatapp/views/phone_login.dart';
 import 'package:realtime_chatapp/views/profile.dart';
@@ -133,6 +136,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (context) => ChatProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (context) => GroupMessageProvider(),
+        ),
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
@@ -150,6 +156,11 @@ class MyApp extends StatelessWidget {
           "/profile": (context) => const ProfilePage(),
           "/update": (context) => const UpdateProfile(),
           "/search": (context) => const SearchUsers(),
+          "/modify_group": (context) => const CreateOrUpdateGroup(),
+          "/read_group_message": (context) => const GroupChatPage(),
+          // "/invite_members":(context)=>InviteMembers(),
+          // "/group_detail":(context)=> GroupDetails(),
+          // "/explore_groups":(context)=> ExploreGroups()
         },
       ),
     );

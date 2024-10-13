@@ -10,6 +10,7 @@ import 'package:realtime_chatapp/controllers/fcm_controllers.dart';
 import 'package:realtime_chatapp/models/chat_data_model.dart';
 import 'package:realtime_chatapp/models/user_data.dart';
 import 'package:realtime_chatapp/providers/chat_provider.dart';
+import 'package:realtime_chatapp/providers/group_message_provider.dart';
 import 'package:realtime_chatapp/providers/user_data_provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -27,6 +28,8 @@ class _HomePageState extends State<HomePage> {
     currentUserid =
         Provider.of<UserDataProvider>(context, listen: false).getUserId;
     Provider.of<ChatProvider>(context, listen: false).loadChats(currentUserid);
+    Provider.of<GroupMessageProvider>(context, listen: false)
+        .loadAllGroupRequiredData(currentUserid);
     PushNotifications.getDeviceToken();
     updateOnlineStatus(status: true, userId: currentUserid);
     subscribeToRealtime(userId: currentUserid);
@@ -165,7 +168,33 @@ class _HomePageState extends State<HomePage> {
               }
             },
           ),
-          Text("Group Messages")
+          Consumer<GroupMessageProvider>(
+            builder: (context, value, child) {
+              if (value.getJoinedGroups.isEmpty) {
+                return Center(child: Text("No Group Joined"));
+              } else {
+                return ListView.builder(
+                  itemCount: value.getJoinedGroups.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      onTap: () =>
+                          Navigator.pushNamed(context, "/read_group_message",arguments: value.getJoinedGroups[index]),
+                      leading: CircleAvatar(
+                          backgroundImage: value.getJoinedGroups[index].image ==
+                                      "" ||
+                                  value.getJoinedGroups[index].image == null
+                              ? Image(
+                                  image: AssetImage("assets/user.png"),
+                                ).image
+                              : CachedNetworkImageProvider(
+                                  "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${value.getJoinedGroups[index].image}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin")),
+                      title: Text(value.getJoinedGroups[index].groupName),
+                    );
+                  },
+                );
+              }
+            },
+          )
         ]),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
