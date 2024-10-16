@@ -2,8 +2,11 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:realtime_chatapp/constants/colors.dart';
+import 'package:realtime_chatapp/constants/memberCalculate.dart';
 import 'package:realtime_chatapp/models/group_model.dart';
+import 'package:realtime_chatapp/providers/user_data_provider.dart';
 
 class GroupChatPage extends StatefulWidget {
   const GroupChatPage({super.key});
@@ -13,6 +16,14 @@ class GroupChatPage extends StatefulWidget {
 }
 
 class _GroupChatPageState extends State<GroupChatPage> {
+  late String currentUser = "";
+  @override
+  void initState() {
+    currentUser =
+        Provider.of<UserDataProvider>(context, listen: false).getUserId;
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     final GroupModel groupData =
@@ -46,6 +57,10 @@ class _GroupChatPageState extends State<GroupChatPage> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                Text(
+                  memCal(groupData.members.length),
+                  style: TextStyle(fontSize: 12),
+                ),
               ],
             ),
           ],
@@ -53,39 +68,49 @@ class _GroupChatPageState extends State<GroupChatPage> {
         actions: [
           PopupMenuButton<String>(
             itemBuilder: (context) => <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                child: Row(
-                  children: [
-                    Icon(Icons.group_add_outlined),
-                    SizedBox(
-                      width: 8,
-                    ),
-                    Text("Invite Members"),
-                  ],
+              if (groupData.isPublic || groupData.admin == currentUser)
+                PopupMenuItem<String>(
+                  child: Row(
+                    children: [
+                      Icon(Icons.group_add_outlined),
+                      SizedBox(
+                        width: 8,
+                      ),
+                      Text("Invite Members"),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem<String>(
-                child: Row(
-                  children: [
-                    Icon(Icons.edit_outlined),
-                    SizedBox(
-                      width: 8,
-                    ),
-                    Text("Edit Group"),
-                  ],
+              if (groupData.admin == currentUser)
+                PopupMenuItem<String>(
+                  onTap: () =>
+                      Navigator.pushNamed(context, "/modify_group", arguments: {
+                    "id": groupData.groupId,
+                    "name": groupData.groupName,
+                    "desc": groupData.groupDesc,
+                    "image": groupData.image,
+                  }),
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit_outlined),
+                      SizedBox(
+                        width: 8,
+                      ),
+                      Text("Edit Group"),
+                    ],
+                  ),
                 ),
-              ),
-              PopupMenuItem<String>(
-                child: Row(
-                  children: [
-                    Icon(Icons.exit_to_app_rounded),
-                    SizedBox(
-                      width: 8,
-                    ),
-                    Text("Exit Group"),
-                  ],
+              if (groupData.admin != currentUser)
+                PopupMenuItem<String>(
+                  child: Row(
+                    children: [
+                      Icon(Icons.exit_to_app_rounded),
+                      SizedBox(
+                        width: 8,
+                      ),
+                      Text("Exit Group"),
+                    ],
+                  ),
                 ),
-              ),
             ],
             child: Icon(Icons.more_vert),
           )

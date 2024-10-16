@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, prefer_const_constructors
+// ignore_for_file: avoid_print, prefer_const_constructors, unnecessary_null_comparison
 
 import 'dart:convert';
 
@@ -158,9 +158,9 @@ class MyApp extends StatelessWidget {
           "/search": (context) => const SearchUsers(),
           "/modify_group": (context) => const CreateOrUpdateGroup(),
           "/read_group_message": (context) => const GroupChatPage(),
-          // "/invite_members":(context)=>InviteMembers(),
-          // "/group_detail":(context)=> GroupDetails(),
-          // "/explore_groups":(context)=> ExploreGroups()
+          // "/invite_members":(context)=>const InviteMembers(),
+          // "/group_detail":(context)=>const GroupDetails(),
+          // "/explore_groups":(context)=>const ExploreGroups()
         },
       ),
     );
@@ -204,6 +204,7 @@ class _CheckUserSessionState extends State<CheckUserSession> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      //to add splash screen add inside this
       body: Center(child: CircularProgressIndicator()),
     );
   }

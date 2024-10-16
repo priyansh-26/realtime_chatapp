@@ -84,20 +84,20 @@ class _CreateOrUpdateGroupState extends State<CreateOrUpdateGroup> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final GroupModel? existingData =
-        ModalRoute.of(context)?.settings.arguments as GroupModel?;
+    Map<String, String?>? existingData =
+        ModalRoute.of(context)?.settings.arguments as Map<String, String?>?;
 
     if (existingData != null) {
-      _groupNameController.text = existingData.groupName ?? "No Name";
-      _groupDescController.text = existingData.groupDesc ?? "";
-      isPublic = existingData.isPublic;
+      _groupNameController.text = existingData["name"] ?? "No Name";
+      _groupDescController.text = existingData["desc"] ?? "";
+      // isPublic = existingData.isPublic;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    GroupModel? existingData =
-        ModalRoute.of(context)?.settings.arguments as GroupModel?;
+    Map<String, String?>? existingData =
+        ModalRoute.of(context)?.settings.arguments as Map<String, String?>?;
 
     return Scaffold(
       appBar: AppBar(
@@ -139,13 +139,13 @@ class _CreateOrUpdateGroupState extends State<CreateOrUpdateGroup> {
                                 ),
                               )
                             : existingData != null &&
-                                    existingData.image != null &&
-                                    existingData.image != ""
+                                    existingData["image"] != null &&
+                                    existingData["image"] != ""
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
                                     child: Image(
                                       image: CachedNetworkImageProvider(
-                                          "https://cloud.appwrite.io/v1/storage/buckets/662faabe001a20bb87c6/files/${existingData.image}/view?project=662e8e5c002f2d77a17c&mode=admin"),
+                                          "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${existingData["image"]}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin"),
                                       fit: BoxFit.cover,
                                     ),
                                   )
@@ -248,12 +248,10 @@ class _CreateOrUpdateGroupState extends State<CreateOrUpdateGroup> {
                 // updating the group
                 if (existingData != null) {
                   await updateExistingGroup(
-                          groupId: existingData.groupId ?? "",
+                          groupId: existingData["id"] ?? "",
                           groupName: _groupNameController.text,
                           groupDesc: _groupDescController.text,
-                          image: imageId == null || imageId == ""
-                              ? existingData.image ?? ""
-                              : imageId ?? "",
+                          image: imageId ?? existingData["image"] ?? "",
                           isOpen: isPublic)
                       .then((value) {
                     if (value) {
