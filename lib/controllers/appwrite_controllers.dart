@@ -12,6 +12,7 @@ import 'package:realtime_chatapp/models/message_model.dart';
 import 'package:realtime_chatapp/models/user_data.dart';
 import 'package:realtime_chatapp/main.dart';
 import 'package:realtime_chatapp/providers/chat_provider.dart';
+import 'package:realtime_chatapp/providers/group_message_provider.dart';
 import 'package:realtime_chatapp/providers/user_data_provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -34,6 +35,7 @@ final Storage storage = Storage(client);
 final Realtime realtime = Realtime(client);
 
 RealtimeSubscription? subscription;
+RealtimeSubscription? groupMsgsubscription;
 // to subscribe to realtime changes
 subscribeToRealtime({required String userId}) {
   subscription = realtime.subscribe([
@@ -62,6 +64,37 @@ subscribeToRealtime({required String userId}) {
       Provider.of<ChatProvider>(navigatorKey.currentState!.context,
               listen: false)
           .loadChats(userId);
+    }
+  });
+}
+// to subscribe to realtime changes
+subscribeToRealtimeGroupMsg({required String userId}) {
+  subscription = realtime.subscribe([
+    "databases.$db.collections.$groupCollection.documents",
+    "databases.$db.collections.$groupMsgCollection.documents"
+  ]);
+
+  print("subscribing to realtime");
+
+  subscription!.stream.listen((data) {
+    print("some event happend");
+    // print(data.events);
+    // print(data.payload);
+    final firstItem = data.events[0].split(".");
+    final eventType = firstItem[firstItem.length - 1];
+    print("event type is $eventType");
+    if (eventType == "create") {
+      Provider.of<GroupMessageProvider>(navigatorKey.currentState!.context,
+              listen: false)
+          .loadAllGroupRequiredData(userId);
+    } else if (eventType == "update") {
+      Provider.of<GroupMessageProvider>(navigatorKey.currentState!.context,
+              listen: false)
+          .loadAllGroupRequiredData(userId);
+    } else if (eventType == "delete") {
+      Provider.of<GroupMessageProvider>(navigatorKey.currentState!.context,
+              listen: false)
+          .loadAllGroupRequiredData(userId);
     }
   });
 }

@@ -33,6 +33,7 @@ class _HomePageState extends State<HomePage> {
     PushNotifications.getDeviceToken();
     updateOnlineStatus(status: true, userId: currentUserid);
     subscribeToRealtime(userId: currentUserid);
+    subscribeToRealtimeGroupMsg(userId: currentUserid);
     super.initState();
   }
 
@@ -177,8 +178,9 @@ class _HomePageState extends State<HomePage> {
                   itemCount: value.getJoinedGroups.length,
                   itemBuilder: (context, index) {
                     return ListTile(
-                      onTap: () =>
-                          Navigator.pushNamed(context, "/read_group_message",arguments: value.getJoinedGroups[index]),
+                      onTap: () => Navigator.pushNamed(
+                          context, "/read_group_message",
+                          arguments: value.getJoinedGroups[index]),
                       leading: CircleAvatar(
                           backgroundImage: value.getJoinedGroups[index].image ==
                                       "" ||
