@@ -17,10 +17,13 @@ import 'package:realtime_chatapp/views/chat_page.dart';
 import 'package:realtime_chatapp/views/create_or_update_group.dart';
 import 'package:realtime_chatapp/views/group_chat_page.dart';
 import 'package:realtime_chatapp/views/home.dart';
+import 'package:realtime_chatapp/views/invite_members.dart';
 import 'package:realtime_chatapp/views/phone_login.dart';
 import 'package:realtime_chatapp/views/profile.dart';
 import 'package:realtime_chatapp/views/search_users.dart';
 import 'package:realtime_chatapp/views/update_profile.dart';
+import 'package:google_fonts/google_fonts.dart';
+// import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 // function to listen to background changes
@@ -67,7 +70,9 @@ class LifecycleEventHandler extends WidgetsBindingObserver {
 }
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  //if error occurs change here
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  // FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   WidgetsBinding.instance.addObserver(LifecycleEventHandler());
   try {
     await Firebase.initializeApp();
@@ -122,9 +127,14 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -158,7 +168,7 @@ class MyApp extends StatelessWidget {
           "/search": (context) => const SearchUsers(),
           "/modify_group": (context) => const CreateOrUpdateGroup(),
           "/read_group_message": (context) => const GroupChatPage(),
-          // "/invite_members":(context)=>const InviteMembers(),
+          "/invite_members":(context)=>const InviteMembers(),
           // "/group_detail":(context)=>const GroupDetails(),
           // "/explore_groups":(context)=>const ExploreGroups()
         },
@@ -199,13 +209,39 @@ class _CheckUserSessionState extends State<CheckUserSession> {
       }
     });
     super.initState();
+    // initialization();
   }
+
+  // void initialization() async {
+  //   print("pausing");
+  //   await Future.delayed(Duration(seconds: 2));
+  //   print("resuming");
+  //   FlutterNativeSplash.remove();
+  // }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      //to add splash screen add inside this
-      body: Center(child: CircularProgressIndicator()),
+    return  Scaffold(
+        //to add splash screen add inside this
+        body: Center(child: CircularProgressIndicator()),
+        // body: Column(
+        //   children: [
+        //     SizedBox(
+        //       height: 150,
+        //     ),
+        //     Center(child: Image(image: AssetImage("assets/register.png"))),
+        //     SizedBox(height: 170),
+        //     Text(
+        //       "Groupie",
+        //       style: GoogleFonts.acme(
+        //         fontSize: 40,
+        //         fontWeight: FontWeight.bold,
+        //         color: Color.fromARGB(255, 69, 66, 66),
+        //       ),
+        //     ),
+        //   ],
+        // ),
+      
     );
   }
 }

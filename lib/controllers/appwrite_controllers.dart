@@ -312,7 +312,8 @@ Future createNewChat(
     {required String message,
     required String senderId,
     required String receiverId,
-    required bool isImage}) async {
+    required bool isImage,
+    required bool isGroupInvite}) async {
   try {
     final msg = await databases.createDocument(
         databaseId: db,
@@ -325,7 +326,8 @@ Future createNewChat(
           "timestamp": DateTime.now().toIso8601String(),
           "isSeenbyReceiver": false,
           "isImage": isImage,
-          "userData": [senderId, receiverId]
+          "userData": [senderId, receiverId],
+          // "isGroupInvite":isGroupInvite,
         });
 
     print("message send");

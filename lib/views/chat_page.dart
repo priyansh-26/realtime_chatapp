@@ -103,12 +103,12 @@ class _ChatPageState extends State<ChatPage> {
                 senderId: currentUserId,
                 receiverId: receiver.userId,
                 isImage: true,
-                // isGroupInvite: false,
+                isGroupInvite: false,
               ).then((value) {
                 if (value) {
                   Provider.of<ChatProvider>(context, listen: false).addMessage(
                       MessageModel(
-                        // isGroupInvite: false,
+                        isGroupInvite: false,
                         message: imageId,
                         sender: currentUserId,
                         receiver: receiver.userId,
@@ -141,11 +141,13 @@ class _ChatPageState extends State<ChatPage> {
                 message: messageController.text,
                 senderId: currentUserId,
                 receiverId: receiver.userId,
-                isImage: false)
+                isImage: false,
+                isGroupInvite: false)
             .then((value) {
           if (value) {
             Provider.of<ChatProvider>(context, listen: false).addMessage(
                 MessageModel(
+                    isGroupInvite: false,
                     message: messageController.text,
                     sender: currentUserId,
                     receiver: receiver.userId,

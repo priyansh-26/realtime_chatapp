@@ -166,6 +166,8 @@ class _GroupChatPageState extends State<GroupChatPage> {
             itemBuilder: (context) => <PopupMenuEntry<String>>[
               if (groupData.isPublic || groupData.admin == currentUser)
                 PopupMenuItem<String>(
+                  onTap: () => Navigator.pushNamed(context, "/invite_members",
+                      arguments: groupData),
                   child: Row(
                     children: [
                       Icon(Icons.group_add_outlined),
@@ -197,6 +199,21 @@ class _GroupChatPageState extends State<GroupChatPage> {
                 ),
               if (groupData.admin != currentUser)
                 PopupMenuItem<String>(
+                  onTap: () async {
+                    await exitGroup(
+                            groupId: groupData.groupId,
+                            currentUser: currentUser)
+                        .then((value) {
+                      if (value) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text("Group Left Successfully.")));
+                        Navigator.pop(context);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Failed to exit group.")));
+                      }
+                    });
+                  },
                   child: Row(
                     children: [
                       Icon(Icons.exit_to_app_rounded),

@@ -251,7 +251,7 @@ class _CreateOrUpdateGroupState extends State<CreateOrUpdateGroup> {
                           groupId: existingData["id"] ?? "",
                           groupName: _groupNameController.text,
                           groupDesc: _groupDescController.text,
-                          image: imageId ?? existingData["image"] ?? "",
+                          image: imageId==null ||imageId=="" ? existingData["image"] ??"":imageId?? "",
                           isOpen: isPublic)
                       .then((value) {
                     if (value) {
