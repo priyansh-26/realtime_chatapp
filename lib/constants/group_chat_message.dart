@@ -100,7 +100,7 @@ class _GroupChatMessageState extends State<GroupChatMessage> {
                             image: AssetImage("assets/user.png"),
                           ).image
                         : CachedNetworkImageProvider(
-                            "https://cloud.appwrite.io/v1/storage/buckets/662faabe001a20bb87c6/files/${widget.msg.userData[0].profilePic}/view?project=662e8e5c002f2d77a17c&mode=admin"),
+                            "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${widget.msg.userData[0].profilePic}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin"),
                   ),
                 Column(
                   crossAxisAlignment: widget.msg.senderId == widget.currentUser

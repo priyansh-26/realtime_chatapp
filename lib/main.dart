@@ -16,6 +16,7 @@ import 'package:realtime_chatapp/providers/user_data_provider.dart';
 import 'package:realtime_chatapp/views/chat_page.dart';
 import 'package:realtime_chatapp/views/create_or_update_group.dart';
 import 'package:realtime_chatapp/views/group_chat_page.dart';
+import 'package:realtime_chatapp/views/group_details.dart';
 import 'package:realtime_chatapp/views/home.dart';
 import 'package:realtime_chatapp/views/invite_members.dart';
 import 'package:realtime_chatapp/views/phone_login.dart';
@@ -169,7 +170,7 @@ class _MyAppState extends State<MyApp> {
           "/modify_group": (context) => const CreateOrUpdateGroup(),
           "/read_group_message": (context) => const GroupChatPage(),
           "/invite_members":(context)=>const InviteMembers(),
-          // "/group_detail":(context)=>const GroupDetails(),
+          "/group_detail":(context)=>const GroupDetails(),
           // "/explore_groups":(context)=>const ExploreGroups()
         },
       ),

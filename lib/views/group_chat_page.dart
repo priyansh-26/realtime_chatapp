@@ -28,6 +28,8 @@ class _GroupChatPageState extends State<GroupChatPage> {
   TextEditingController _messageController = TextEditingController();
   TextEditingController _editMessageController = TextEditingController();
   late String currentUser = "";
+
+  FilePickerResult? _filePickerResult;
   @override
   void initState() {
     currentUser =
@@ -36,51 +38,51 @@ class _GroupChatPageState extends State<GroupChatPage> {
   }
 
   // to open file picker
-  // void _openFilePicker(GroupModel groupData) async {
-  //   FilePickerResult? result = await FilePicker.platform
-  //       .pickFiles(allowMultiple: true, type: FileType.image);
+  void _openFilePicker(GroupModel groupData) async {
+    FilePickerResult? result = await FilePicker.platform
+        .pickFiles(allowMultiple: true, type: FileType.image);
 
-  //   setState(() {
-  //     _filePickerResult = result;
-  //     uploadAllImage(groupData);
-  //   });
-  // }
+    setState(() {
+      _filePickerResult = result;
+      uploadAllImage(groupData);
+    });
+  }
 
-  // // to upload files to our storage bucket and our database
-  // void uploadAllImage(GroupModel groupData) async {
-  //   if (_filePickerResult != null) {
-  //     _filePickerResult!.paths.forEach((path) {
-  //       if (path != null) {
-  //         var file = File(path);
-  //         final fileBytes = file.readAsBytesSync();
-  //         final inputfile = InputFile.fromBytes(
-  //             bytes: fileBytes, filename: file.path.split("/").last);
+  // to upload files to our storage bucket and our database
+  void uploadAllImage(GroupModel groupData) async {
+    if (_filePickerResult != null) {
+      _filePickerResult!.paths.forEach((path) {
+        if (path != null) {
+          var file = File(path);
+          final fileBytes = file.readAsBytesSync();
+          final inputfile = InputFile.fromBytes(
+              bytes: fileBytes, filename: file.path.split("/").last);
 
-  //         // saving image to our storage bucket
-  //         saveImageToBucket(image: inputfile).then((imageId) {
-  //           if (imageId != null) {
-  //             sendGroupMessage(
-  //                 groupId: groupData.groupId,
-  //                 message: imageId,
-  //                 senderId: currentUser,
-  //                 isImage: true);
-  //             List<String> userTokens = [];
+          // saving image to our storage bucket
+          saveImageToBucket(image: inputfile).then((imageId) {
+            if (imageId != null) {
+              sendGroupMessage(
+                  groupId: groupData.groupId,
+                  message: imageId,
+                  senderId: currentUser,
+                  isImage: true);
+              List<String> userTokens = [];
 
-  //             for (var i = 0; i < groupData.userData.length; i++) {
-  //               if (groupData.userData[i].userId != currentUser) {
-  //                 userTokens.add(groupData.userData[i].deviceToken ?? "");
-  //               }
-  //             }
-  //             print("users token are $userTokens");
-  //             //  sendMultipleNotificationtoOtherUser(notificationTitle: "Received an image in ${groupData.groupName}", notificationBody: '${currentUserName}: Sent and image', deviceToken:userTokens );
-  //           }
-  //         });
-  //       }
-  //     });
-  //   } else {
-  //     print("file pick cancelled by user");
-  //   }
-  // }
+              for (var i = 0; i < groupData.userData.length; i++) {
+                if (groupData.userData[i].userId != currentUser) {
+                  userTokens.add(groupData.userData[i].deviceToken ?? "");
+                }
+              }
+              print("users token are $userTokens");
+              //  sendMultipleNotificationtoOtherUser(notificationTitle: "Received an image in ${groupData.groupName}", notificationBody: '${currentUserName}: Sent and image', deviceToken:userTokens );
+            }
+          });
+        }
+      });
+    } else {
+      print("file pick cancelled by user");
+    }
+  }
 
   void _sendGroupMessage(
       {required String groupId,
@@ -130,36 +132,41 @@ class _GroupChatPageState extends State<GroupChatPage> {
         backgroundColor: kBackgroundColor,
         scrolledUnderElevation: 0,
         elevation: 0,
-        title: Row(
-          children: [
-            CircleAvatar(
-              backgroundImage: groupData.image == "" || groupData.image == null
-                  ? Image(
-                      image: AssetImage("assets/user.png"),
-                    ).image
-                  : CachedNetworkImageProvider(
-                      "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${groupData.image}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin"),
-            ),
-            SizedBox(
-              width: 10,
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  groupData.groupName,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
+        title: GestureDetector(
+          onTap: () => Navigator.pushNamed(context, "/group_detail",
+              arguments: groupData),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundImage: groupData.image == "" ||
+                        groupData.image == null
+                    ? Image(
+                        image: AssetImage("assets/user.png"),
+                      ).image
+                    : CachedNetworkImageProvider(
+                        "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${groupData.image}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin"),
+              ),
+              SizedBox(
+                width: 10,
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    groupData.groupName,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                Text(
-                  memCal(groupData.members.length),
-                  style: TextStyle(fontSize: 12),
-                ),
-              ],
-            ),
-          ],
+                  Text(
+                    memCal(groupData.members.length),
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         actions: [
           PopupMenuButton<String>(
@@ -236,15 +243,108 @@ class _GroupChatPageState extends State<GroupChatPage> {
                 value.getGroupMessages;
             List<GroupMessageModel> thisGroupMsg =
                 allGroupMessages[groupData.groupId] ?? [];
-            List<GroupMessageModel> reverseMsg = thisGroupMsg.reversed.toList();
+            List<GroupMessageModel> reversedMsg =
+                thisGroupMsg.reversed.toList();
+            //           if(thisGroupMsg.length>0){
+            // updateLastMessageSeen(groupData.groupId, thisGroupMsg.last.messageId);
+            //                 }
+            Provider.of<GroupMessageProvider>(context, listen: false)
+                .loadAllGroupData(
+                    Provider.of<UserDataProvider>(context, listen: false)
+                        .getUserId);
 
             return ListView.builder(
-                reverse: true,
-                itemBuilder: (context, index) => GroupChatMessage(
-                    msg: reverseMsg[index],
-                    currentUser: currentUser,
-                    isImage: reverseMsg[index].isImage ?? false),
-                itemCount: reverseMsg.length);
+              reverse: true,
+              itemCount: reversedMsg.length,
+              itemBuilder: (context, index) => GestureDetector(
+                  onLongPress: () {
+                    final msg = reversedMsg[index];
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: msg.isImage == true
+                            ? Text(msg.senderId == currentUser ||
+                                    groupData.admin == currentUser
+                                ? "Chosse what you want to do with this image."
+                                : "This image cant be modified")
+                            : Text(
+                                "${msg.message.length > 20 ? msg.message.substring(0, 20) : msg.message} ..."),
+                        content: msg.isImage == true
+                            ? Text(msg.senderId == currentUser ||
+                                    groupData.admin == currentUser
+                                ? 'Delete this image'
+                                : 'This image cant be deleted')
+                            : Text(msg.senderId == currentUser ||
+                                    groupData.admin == currentUser
+                                ? 'Chosse what you want to do with this message.'
+                                : 'This message cant be modified'),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: Text("Cancel")),
+                          (msg.senderId == currentUser ||
+                                      groupData.admin == currentUser) &&
+                                  (msg.isImage == false)
+                              ? TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    _editMessageController.text = msg.message;
+
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                              title: Text("Edit this message"),
+                                              content: TextFormField(
+                                                controller:
+                                                    _editMessageController,
+                                                // maxLines: 10,
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                    onPressed: () {
+                                                      updateGroupMessage(
+                                                              messageId:
+                                                                  msg.messageId,
+                                                              newMessage:
+                                                                  _editMessageController
+                                                                      .text)
+                                                          .then((value) =>
+                                                              Navigator.pop(
+                                                                  context));
+                                                    },
+                                                    child: Text("Ok")),
+                                                TextButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: Text("Cancel")),
+                                              ],
+                                            ));
+                                  },
+                                  child: Text("Edit"))
+                              : SizedBox(),
+                          msg.senderId == currentUser ||
+                                  groupData.admin == currentUser
+                              ? TextButton(
+                                  onPressed: () {
+                                    deleteGroupMessage(
+                                        messageId: msg.messageId);
+
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text("Delete"))
+                              : SizedBox(),
+                        ],
+                      ),
+                    );
+                  },
+                  child: GroupChatMessage(
+                      msg: reversedMsg[index],
+                      currentUser: currentUser,
+                      isImage: reversedMsg[index].isImage ?? false)),
+            );
           },
         )),
         Container(
@@ -256,7 +356,11 @@ class _GroupChatPageState extends State<GroupChatPage> {
             Expanded(
               child: TextField(
                 onSubmitted: (value) {
-                  // _sendMessage(receiver: receiver);
+                  _sendGroupMessage(
+                      groupData: groupData,
+                      groupId: groupData.groupId,
+                      message: _messageController.text,
+                      senderId: currentUser);
                 },
                 controller: _messageController,
                 decoration: InputDecoration(
@@ -265,7 +369,7 @@ class _GroupChatPageState extends State<GroupChatPage> {
             ),
             IconButton(
               onPressed: () {
-                // _openFilePicker(receiver);
+                _openFilePicker(groupData);
               },
               icon: Icon(Icons.image),
             ),

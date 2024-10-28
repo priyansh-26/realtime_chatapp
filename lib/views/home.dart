@@ -8,6 +8,7 @@ import 'package:realtime_chatapp/constants/formate_data.dart';
 import 'package:realtime_chatapp/controllers/appwrite_controllers.dart';
 import 'package:realtime_chatapp/controllers/fcm_controllers.dart';
 import 'package:realtime_chatapp/models/chat_data_model.dart';
+import 'package:realtime_chatapp/models/group_message_model.dart';
 import 'package:realtime_chatapp/models/user_data.dart';
 import 'package:realtime_chatapp/providers/chat_provider.dart';
 import 'package:realtime_chatapp/providers/group_message_provider.dart';
@@ -138,8 +139,8 @@ class _HomePageState extends State<HomePage> {
                         title: Text(otherUser.name!),
                         subtitle: Text(
                           chatData[totalChats - 1].message.isGroupInvite
-                              ? "${chatData[totalChats - 1].message.sender == currentUserid ? "You sent a group invite " : "Receive a group invite"}":
-                          "${chatData[totalChats - 1].message.sender == currentUserid ? "You : " : ""}${chatData[totalChats - 1].message.isImage == true ? "Sent an image" : chatData[totalChats - 1].message.message}",
+                              ? "${chatData[totalChats - 1].message.sender == currentUserid ? "You sent a group invite " : "Receive a group invite"}"
+                              : "${chatData[totalChats - 1].message.sender == currentUserid ? "You : " : ""}${chatData[totalChats - 1].message.isImage == true ? "Sent an image" : chatData[totalChats - 1].message.message}",
                           overflow: TextOverflow.ellipsis,
                         ),
                         trailing: Column(
@@ -179,6 +180,15 @@ class _HomePageState extends State<HomePage> {
                 return ListView.builder(
                   itemCount: value.getJoinedGroups.length,
                   itemBuilder: (context, index) {
+                    String groupId = value.getJoinedGroups[index].groupId;
+                    // get the latest message
+                    List<GroupMessageModel>? messages =
+                        value.getGroupMessages[groupId];
+
+                    GroupMessageModel? latestMessage =
+                        messages != null && messages.isNotEmpty
+                            ? messages.last
+                            : null;
                     return ListTile(
                       onTap: () => Navigator.pushNamed(
                           context, "/read_group_message",
@@ -193,6 +203,50 @@ class _HomePageState extends State<HomePage> {
                               : CachedNetworkImageProvider(
                                   "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${value.getJoinedGroups[index].image}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin")),
                       title: Text(value.getJoinedGroups[index].groupName),
+                      subtitle: Text(
+                        latestMessage == null
+                            ? "No Message"
+                            : "${latestMessage!.senderId == currentUserid ? "You : " : "${latestMessage.userData[0].name ?? "No Name"} : "}${latestMessage.isImage == true ? "Sent an image" : latestMessage.message}",
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          // FutureBuilder(
+                          //   future: calculateUnreadMessages(
+                          //       groupId, messages ?? []),
+                          //   builder: (context, snapshot) {
+                          //     if (snapshot.connectionState ==
+                          //         ConnectionState.waiting) {
+                          //       return SizedBox();
+                          //     } else if (snapshot.hasError) {
+                          //       return SizedBox();
+                          //     } else {
+                          //       int unreadMsgCount = snapshot.data ?? 0;
+                          //       return unreadMsgCount == 0
+                          //           ? SizedBox()
+                          //           : CircleAvatar(
+                          //               backgroundColor: kPrimaryColor,
+                          //               radius: 10,
+                          //               child: Text(
+                          //                 "$unreadMsgCount",
+                          //                 style: TextStyle(
+                          //                     fontSize: 11,
+                          //                     color: Colors.white),
+                          //               ),
+                          //             );
+                          //     }
+                          //   },
+                          // ),
+                          SizedBox(
+                            height: 8,
+                          ),
+                          latestMessage == null
+                              ? SizedBox()
+                              : Text(formatDate(latestMessage.timestamp))
+                        ],
+                      ),
                     );
                   },
                 );

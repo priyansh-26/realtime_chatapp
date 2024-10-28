@@ -67,6 +67,7 @@ subscribeToRealtime({required String userId}) {
     }
   });
 }
+
 // to subscribe to realtime changes
 subscribeToRealtimeGroupMsg({required String userId}) {
   subscription = realtime.subscribe([
@@ -327,7 +328,7 @@ Future createNewChat(
           "isSeenbyReceiver": false,
           "isImage": isImage,
           "userData": [senderId, receiverId],
-          // "isGroupInvite":isGroupInvite,
+          "isGroupInvite":isGroupInvite,
         });
 
     print("message send");
