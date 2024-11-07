@@ -32,7 +32,6 @@ class _HomePageState extends State<HomePage> {
     Provider.of<GroupMessageProvider>(context, listen: false)
         .loadAllGroupRequiredData(currentUserid);
     PushNotifications.getDeviceToken();
-    updateOnlineStatus(status: true, userId: currentUserid);
     subscribeToRealtime(userId: currentUserid);
     subscribeToRealtimeGroupMsg(userId: currentUserid);
     super.initState();
@@ -40,6 +39,9 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<GroupMessageProvider>(context, listen: false)
+        .loadAllGroupData(currentUserid);
+    updateOnlineStatus(status: true, userId: currentUserid);
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -93,6 +95,9 @@ class _HomePageState extends State<HomePage> {
                     itemBuilder: (context, index) {
                       List<ChatDataModel> chatData =
                           value.getAllChats[otherUsers[index]]!;
+                      if (chatData.isEmpty) {
+                        return SizedBox.shrink();
+                      }
 
                       int totalChats = chatData.length;
                       UserData otherUser =
@@ -213,32 +218,32 @@ class _HomePageState extends State<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          // FutureBuilder(
-                          //   future: calculateUnreadMessages(
-                          //       groupId, messages ?? []),
-                          //   builder: (context, snapshot) {
-                          //     if (snapshot.connectionState ==
-                          //         ConnectionState.waiting) {
-                          //       return SizedBox();
-                          //     } else if (snapshot.hasError) {
-                          //       return SizedBox();
-                          //     } else {
-                          //       int unreadMsgCount = snapshot.data ?? 0;
-                          //       return unreadMsgCount == 0
-                          //           ? SizedBox()
-                          //           : CircleAvatar(
-                          //               backgroundColor: kPrimaryColor,
-                          //               radius: 10,
-                          //               child: Text(
-                          //                 "$unreadMsgCount",
-                          //                 style: TextStyle(
-                          //                     fontSize: 11,
-                          //                     color: Colors.white),
-                          //               ),
-                          //             );
-                          //     }
-                          //   },
-                          // ),
+                          FutureBuilder(
+                            future: calculateUnreadMessages(
+                                groupId, messages ?? []),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return SizedBox();
+                              } else if (snapshot.hasError) {
+                                return SizedBox();
+                              } else {
+                                int unreadMsgCount = snapshot.data ?? 0;
+                                return unreadMsgCount == 0
+                                    ? SizedBox()
+                                    : CircleAvatar(
+                                        backgroundColor: kPrimaryColor,
+                                        radius: 10,
+                                        child: Text(
+                                          "$unreadMsgCount",
+                                          style: TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.white),
+                                        ),
+                                      );
+                              }
+                            },
+                          ),
                           SizedBox(
                             height: 8,
                           ),

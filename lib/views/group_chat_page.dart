@@ -28,12 +28,16 @@ class _GroupChatPageState extends State<GroupChatPage> {
   TextEditingController _messageController = TextEditingController();
   TextEditingController _editMessageController = TextEditingController();
   late String currentUser = "";
+  late String currentUserName = "";
+
 
   FilePickerResult? _filePickerResult;
   @override
   void initState() {
     currentUser =
         Provider.of<UserDataProvider>(context, listen: false).getUserId;
+    currentUserName =
+        Provider.of<UserDataProvider>(context, listen: false).getUserName;
     super.initState();
   }
 
@@ -74,7 +78,7 @@ class _GroupChatPageState extends State<GroupChatPage> {
                 }
               }
               print("users token are $userTokens");
-              //  sendMultipleNotificationtoOtherUser(notificationTitle: "Received an image in ${groupData.groupName}", notificationBody: '${currentUserName}: Sent and image', deviceToken:userTokens );
+              sendMultipleNotificationtoOtherUser(notificationTitle: "Received an image in ${groupData.groupName}", notificationBody: '${currentUserName}: Sent and image', deviceToken:userTokens );
             }
           });
         }
@@ -105,7 +109,7 @@ class _GroupChatPageState extends State<GroupChatPage> {
           }
         }
         print("users token are $userTokens");
-        // sendMultipleNotificationtoOtherUser(notificationTitle: "Received a message in ${groupData.groupName}", notificationBody: '${currentUserName}: ${_messageController.text}', deviceToken:userTokens );
+        sendMultipleNotificationtoOtherUser(notificationTitle: "Received a message in ${groupData.groupName}", notificationBody: '${currentUserName}: ${_messageController.text}', deviceToken:userTokens );
         Provider.of<GroupMessageProvider>(context, listen: false)
             .addGroupMessage(
                 groupId: groupId,
@@ -126,6 +130,8 @@ class _GroupChatPageState extends State<GroupChatPage> {
   Widget build(BuildContext context) {
     final GroupModel groupData =
         ModalRoute.of(context)!.settings.arguments as GroupModel;
+    Provider.of<GroupMessageProvider>(context, listen: false).loadAllGroupData(
+        Provider.of<UserDataProvider>(context, listen: false).getUserId);
     return Scaffold(
       appBar: AppBar(
         leadingWidth: 40,
@@ -245,9 +251,10 @@ class _GroupChatPageState extends State<GroupChatPage> {
                 allGroupMessages[groupData.groupId] ?? [];
             List<GroupMessageModel> reversedMsg =
                 thisGroupMsg.reversed.toList();
-            //           if(thisGroupMsg.length>0){
-            // updateLastMessageSeen(groupData.groupId, thisGroupMsg.last.messageId);
-            //                 }
+            if (thisGroupMsg.length > 0) {
+              updateLastMessageSeen(
+                  groupData.groupId, thisGroupMsg.last.messageId);
+            }
             Provider.of<GroupMessageProvider>(context, listen: false)
                 .loadAllGroupData(
                     Provider.of<UserDataProvider>(context, listen: false)

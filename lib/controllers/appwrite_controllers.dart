@@ -328,7 +328,7 @@ Future createNewChat(
           "isSeenbyReceiver": false,
           "isImage": isImage,
           "userData": [senderId, receiverId],
-          "isGroupInvite":isGroupInvite,
+          "isGroupInvite": isGroupInvite,
         });
 
     print("message send");
@@ -718,29 +718,34 @@ Future<bool> exitGroup(
 }
 
 // calculate the no of last unreadMessages
-//   Future<int> calculateUnreadMessages(String groupId, List<GroupMessageModel> groupMessages) async {
-//   Map<String, String> lastSeenMessages = await LocalSavedData(). getLastSeenMessages();
-//   String? lastSeenMessageId = lastSeenMessages[groupId];
+Future<int> calculateUnreadMessages(
+    String groupId, List<GroupMessageModel> groupMessages) async {
+  Map<String, String> lastSeenMessages =
+      await LocalSavedData().getLastSeenMessages();
+  String? lastSeenMessageId = lastSeenMessages[groupId];
 
-//   if (lastSeenMessageId == null) {
-//     return groupMessages.length;
-//   }
+  if (lastSeenMessageId == null) {
+    return groupMessages.length;
+  }
 
-//   int unreadCount = groupMessages.indexWhere((message) => message.messageId == lastSeenMessageId);
-//   if (unreadCount == -1) {
-//     return groupMessages.length;
-//   }
+  int unreadCount = groupMessages
+      .indexWhere((message) => message.messageId == lastSeenMessageId);
+  if (unreadCount == -1) {
+    return groupMessages.length;
+  }
 
-//   return groupMessages.length - unreadCount - 1;
-// }
+  return groupMessages.length - unreadCount - 1;
+}
 
-// // save last message seen in the group
-//  Future<void> updateLastMessageSeen(String groupId, String lastMessageSeenId) async {
-//   Map<String, String> lastSeenMessages = await LocalSavedData().getLastSeenMessages();
-//   print("last seen messages: $lastSeenMessages");
-//   lastSeenMessages[groupId] = lastMessageSeenId;
-//   await LocalSavedData(). saveLastSeenMessages(lastSeenMessages);
-// }
+// save last message seen in the group
+Future<void> updateLastMessageSeen(
+    String groupId, String lastMessageSeenId) async {
+  Map<String, String> lastSeenMessages =
+      await LocalSavedData().getLastSeenMessages();
+  print("last seen messages: $lastSeenMessages");
+  lastSeenMessages[groupId] = lastMessageSeenId;
+  await LocalSavedData().saveLastSeenMessages(lastSeenMessages);
+}
 
 // list all public groups
 Future<List<Document>> getPublicGroups() async {
@@ -755,5 +760,31 @@ Future<List<Document>> getPublicGroups() async {
   } catch (e) {
     print("error in getting public groups $e");
     return [];
+  }
+}
+
+// send notifications to multiple users at once
+Future sendMultipleNotificationtoOtherUser({
+  required String notificationTitle,
+  required String notificationBody,
+  required List<String> deviceToken,
+}) async {
+  try {
+    print("sending notification");
+    final Map<String, dynamic> body = {
+      "deviceToken": deviceToken,
+      "message": {"title": notificationTitle, "body": notificationBody},
+    };
+
+    final response = await http.post(
+        Uri.parse("http://67095f2d4dfca1857d03.appwrite.global/many"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body));
+
+    if (response.statusCode == 200) {
+      print("notification send to other user");
+    }
+  } catch (e) {
+    print("notification cannot be sent");
   }
 }
