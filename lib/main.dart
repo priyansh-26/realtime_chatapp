@@ -15,6 +15,7 @@ import 'package:realtime_chatapp/providers/group_message_provider.dart';
 import 'package:realtime_chatapp/providers/user_data_provider.dart';
 import 'package:realtime_chatapp/views/chat_page.dart';
 import 'package:realtime_chatapp/views/create_or_update_group.dart';
+import 'package:realtime_chatapp/views/explore_groups.dart';
 import 'package:realtime_chatapp/views/group_chat_page.dart';
 import 'package:realtime_chatapp/views/group_details.dart';
 import 'package:realtime_chatapp/views/home.dart';
@@ -169,9 +170,9 @@ class _MyAppState extends State<MyApp> {
           "/search": (context) => const SearchUsers(),
           "/modify_group": (context) => const CreateOrUpdateGroup(),
           "/read_group_message": (context) => const GroupChatPage(),
-          "/invite_members":(context)=>const InviteMembers(),
-          "/group_detail":(context)=>const GroupDetails(),
-          // "/explore_groups":(context)=>const ExploreGroups()
+          "/invite_members": (context) => const InviteMembers(),
+          "/group_detail": (context) => const GroupDetails(),
+          "/explore_groups": (context) => ExploreGroups(),
         },
       ),
     );
@@ -222,27 +223,26 @@ class _CheckUserSessionState extends State<CheckUserSession> {
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-        //to add splash screen add inside this
-        body: Center(child: CircularProgressIndicator()),
-        // body: Column(
-        //   children: [
-        //     SizedBox(
-        //       height: 150,
-        //     ),
-        //     Center(child: Image(image: AssetImage("assets/register.png"))),
-        //     SizedBox(height: 170),
-        //     Text(
-        //       "Groupie",
-        //       style: GoogleFonts.acme(
-        //         fontSize: 40,
-        //         fontWeight: FontWeight.bold,
-        //         color: Color.fromARGB(255, 69, 66, 66),
-        //       ),
-        //     ),
-        //   ],
-        // ),
-      
+    return Scaffold(
+      //to add splash screen add inside this
+      body: Center(child: CircularProgressIndicator()),
+      // body: Column(
+      //   children: [
+      //     SizedBox(
+      //       height: 150,
+      //     ),
+      //     Center(child: Image(image: AssetImage("assets/register.png"))),
+      //     SizedBox(height: 170),
+      //     Text(
+      //       "Groupie",
+      //       style: GoogleFonts.acme(
+      //         fontSize: 40,
+      //         fontWeight: FontWeight.bold,
+      //         color: Color.fromARGB(255, 69, 66, 66),
+      //       ),
+      //     ),
+      //   ],
+      // ),
     );
   }
 }

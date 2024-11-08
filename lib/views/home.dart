@@ -182,78 +182,127 @@ class _HomePageState extends State<HomePage> {
               if (value.getJoinedGroups.isEmpty) {
                 return Center(child: Text("No Group Joined"));
               } else {
-                return ListView.builder(
-                  itemCount: value.getJoinedGroups.length,
-                  itemBuilder: (context, index) {
-                    String groupId = value.getJoinedGroups[index].groupId;
-                    // get the latest message
-                    List<GroupMessageModel>? messages =
-                        value.getGroupMessages[groupId];
+                // Sort groups based on the timestamp of the latest message in each group
+                value.getJoinedGroups.sort((a, b) {
+                  String groupIdA = a.groupId;
+                  String groupIdB = b.groupId;
 
-                    GroupMessageModel? latestMessage =
-                        messages != null && messages.isNotEmpty
-                            ? messages.last
-                            : null;
-                    return ListTile(
-                      onTap: () => Navigator.pushNamed(
-                          context, "/read_group_message",
-                          arguments: value.getJoinedGroups[index]),
-                      leading: CircleAvatar(
-                          backgroundImage: value.getJoinedGroups[index].image ==
-                                      "" ||
-                                  value.getJoinedGroups[index].image == null
-                              ? Image(
-                                  image: AssetImage("assets/user.png"),
-                                ).image
-                              : CachedNetworkImageProvider(
-                                  "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${value.getJoinedGroups[index].image}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin")),
-                      title: Text(value.getJoinedGroups[index].groupName),
-                      subtitle: Text(
-                        latestMessage == null
-                            ? "No Message"
-                            : "${latestMessage!.senderId == currentUserid ? "You : " : "${latestMessage.userData[0].name ?? "No Name"} : "}${latestMessage.isImage == true ? "Sent an image" : latestMessage.message}",
-                        overflow: TextOverflow.ellipsis,
+                  // Get the latest message for group A
+                  List<GroupMessageModel>? messagesA =
+                      value.getGroupMessages?[groupIdA];
+                  DateTime? latestTimestampA =
+                      messagesA != null && messagesA.isNotEmpty
+                          ? messagesA.last.timestamp
+                          : DateTime.fromMillisecondsSinceEpoch(
+                              0); // Default old date if no messages
+
+                  // Get the latest message for group B
+                  List<GroupMessageModel>? messagesB =
+                      value.getGroupMessages?[groupIdB];
+                  DateTime? latestTimestampB =
+                      messagesB != null && messagesB.isNotEmpty
+                          ? messagesB.last.timestamp
+                          : DateTime.fromMillisecondsSinceEpoch(
+                              0); // Default old date if no messages
+
+                  // Sort in descending order by timestamp
+                  return latestTimestampB.compareTo(latestTimestampA);
+                });
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: ListTile(
+                        onTap: () =>
+                            Navigator.pushNamed(context, "/explore_groups"),
+                        leading: Icon(Icons.groups_outlined),
+                        title: Text("Explore Groups"),
+                        trailing: Icon(
+                          Icons
+                              .arrow_forward_ios, // Add an arrow for navigation indication
+                          color: Colors.grey, // Subtle arrow color
+                          size: 18,
+                        ),
                       ),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          FutureBuilder(
-                            future: calculateUnreadMessages(
-                                groupId, messages ?? []),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return SizedBox();
-                              } else if (snapshot.hasError) {
-                                return SizedBox();
-                              } else {
-                                int unreadMsgCount = snapshot.data ?? 0;
-                                return unreadMsgCount == 0
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: value.getJoinedGroups.length,
+                        itemBuilder: (context, index) {
+                          String groupId = value.getJoinedGroups[index].groupId;
+                          // get the latest message
+                          List<GroupMessageModel>? messages =
+                              value.getGroupMessages[groupId];
+
+                          GroupMessageModel? latestMessage =
+                              messages != null && messages.isNotEmpty
+                                  ? messages.last
+                                  : null;
+                          return ListTile(
+                            onTap: () => Navigator.pushNamed(
+                                context, "/read_group_message",
+                                arguments: value.getJoinedGroups[index]),
+                            leading: CircleAvatar(
+                                backgroundImage: value
+                                                .getJoinedGroups[index].image ==
+                                            "" ||
+                                        value.getJoinedGroups[index].image ==
+                                            null
+                                    ? Image(
+                                        image: AssetImage("assets/user.png"),
+                                      ).image
+                                    : CachedNetworkImageProvider(
+                                        "https://cloud.appwrite.io/v1/storage/buckets/66e5c8d500029fa844fb/files/${value.getJoinedGroups[index].image}/view?project=66df2f70000a3570467e&project=66df2f70000a3570467e&mode=admin")),
+                            title: Text(value.getJoinedGroups[index].groupName),
+                            subtitle: Text(
+                              latestMessage == null
+                                  ? "No Message"
+                                  : "${latestMessage!.senderId == currentUserid ? "You : " : "${latestMessage.userData[0].name ?? "No Name"} : "}${latestMessage.isImage == true ? "Sent an image" : latestMessage.message}",
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                FutureBuilder(
+                                  future: calculateUnreadMessages(
+                                      groupId, messages ?? []),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return SizedBox();
+                                    } else if (snapshot.hasError) {
+                                      return SizedBox();
+                                    } else {
+                                      int unreadMsgCount = snapshot.data ?? 0;
+                                      return unreadMsgCount == 0
+                                          ? SizedBox()
+                                          : CircleAvatar(
+                                              backgroundColor: kPrimaryColor,
+                                              radius: 10,
+                                              child: Text(
+                                                "$unreadMsgCount",
+                                                style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: Colors.white),
+                                              ),
+                                            );
+                                    }
+                                  },
+                                ),
+                                SizedBox(
+                                  height: 8,
+                                ),
+                                latestMessage == null
                                     ? SizedBox()
-                                    : CircleAvatar(
-                                        backgroundColor: kPrimaryColor,
-                                        radius: 10,
-                                        child: Text(
-                                          "$unreadMsgCount",
-                                          style: TextStyle(
-                                              fontSize: 11,
-                                              color: Colors.white),
-                                        ),
-                                      );
-                              }
-                            },
-                          ),
-                          SizedBox(
-                            height: 8,
-                          ),
-                          latestMessage == null
-                              ? SizedBox()
-                              : Text(formatDate(latestMessage.timestamp))
-                        ],
+                                    : Text(formatDate(latestMessage.timestamp))
+                              ],
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 );
               }
             },

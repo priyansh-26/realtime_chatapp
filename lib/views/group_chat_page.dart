@@ -30,7 +30,6 @@ class _GroupChatPageState extends State<GroupChatPage> {
   late String currentUser = "";
   late String currentUserName = "";
 
-
   FilePickerResult? _filePickerResult;
   @override
   void initState() {
@@ -78,7 +77,11 @@ class _GroupChatPageState extends State<GroupChatPage> {
                 }
               }
               print("users token are $userTokens");
-              sendMultipleNotificationtoOtherUser(notificationTitle: "Received an image in ${groupData.groupName}", notificationBody: '${currentUserName}: Sent and image', deviceToken:userTokens );
+              sendMultipleNotificationtoOtherUser(
+                  notificationTitle:
+                      "Received an image in ${groupData.groupName}",
+                  notificationBody: '${currentUserName}: Sent and image',
+                  deviceToken: userTokens);
             }
           });
         }
@@ -109,7 +112,10 @@ class _GroupChatPageState extends State<GroupChatPage> {
           }
         }
         print("users token are $userTokens");
-        sendMultipleNotificationtoOtherUser(notificationTitle: "Received a message in ${groupData.groupName}", notificationBody: '${currentUserName}: ${_messageController.text}', deviceToken:userTokens );
+        sendMultipleNotificationtoOtherUser(
+            notificationTitle: "Received a message in ${groupData.groupName}",
+            notificationBody: '${currentUserName}: ${_messageController.text}',
+            deviceToken: userTokens);
         Provider.of<GroupMessageProvider>(context, listen: false)
             .addGroupMessage(
                 groupId: groupId,
@@ -193,13 +199,8 @@ class _GroupChatPageState extends State<GroupChatPage> {
                 ),
               if (groupData.admin == currentUser)
                 PopupMenuItem<String>(
-                  onTap: () =>
-                      Navigator.pushNamed(context, "/modify_group", arguments: {
-                    "id": groupData.groupId,
-                    "name": groupData.groupName,
-                    "desc": groupData.groupDesc,
-                    "image": groupData.image,
-                  }),
+                  onTap: () => Navigator.pushNamed(context, "/modify_group",
+                      arguments: groupData),
                   child: Row(
                     children: [
                       Icon(Icons.edit_outlined),
